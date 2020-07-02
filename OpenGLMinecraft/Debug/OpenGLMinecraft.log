@@ -1,0 +1,13 @@
+﻿  Main.cpp
+c:\users\erik\documents\opengl stuff\include\shader.h(61): warning C4101: 'e': unreferenced local variable
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(187): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(202): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(244): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(245): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(267): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\graphicsengine.h(281): warning C4018: '<': signed/unsigned mismatch
+c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
+  c:\users\erik\documents\opengl stuff\include\glad\glad.h(32): note: see previous definition of 'APIENTRY'
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(58): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(89): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  OpenGLMinecraft.vcxproj -> C:\Users\Erik\source\repos\OpenGLMinecraft\Debug\OpenGLMinecraft.exe
