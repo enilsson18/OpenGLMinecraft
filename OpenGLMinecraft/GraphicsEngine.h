@@ -38,10 +38,7 @@ public:
 	Shader ourShader;
 
 	//cube vertex data
-	std::vector<unsigned int> VBO, VAO;
-
-	//surfaces to render in standard order of orientation 6 x num of blocks
-	std::vector<std::vector<Surface>> surfaces;
+	unsigned int VBO, VAO;
 
 	//camera
 	Camera camera;
@@ -52,7 +49,7 @@ public:
 	std::vector<std::vector<Block*>> loadedBlocks;
 
 	//texture data
-	std::vector<std::vector<unsigned int>> texture;
+	std::vector<unsigned int> texture;
 
 	GraphicsEngine(const char* windowName, const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
 		//initialize Camera
@@ -87,76 +84,64 @@ public:
 		ourShader = Shader("shaders/6.3.coordinate_systems.vs", "shaders/6.3.coordinate_systems.fs");
 
 		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
-		float faceVertices[6][30] = {
-			{
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f
-			},
-			{
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f
-			},
-			{
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f
-			},
-			{
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f
-			},
-			{
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f
-			},
-			{
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-			}
+		float vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 		};
 
-		//load and set pos of all the vertecies for construction of a cube
-		VBO.resize(6);
-		VAO.resize(6);
-		for (int i = 0; i < 6; i++) {
-			glGenVertexArrays(1, &VAO[i]);
-			glGenBuffers(1, &VBO[i]);
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
 
-			glBindVertexArray(VAO[i]);
+		glBindVertexArray(VAO);
 
-			glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(faceVertices[i]), faceVertices[i], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-			// position attribute
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
-			// texture coord attribute
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(1);
-		}
+		// position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+		// texture coord attribute
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -185,12 +170,8 @@ public:
 	void generateTextures() {
 		texture.clear();
 		for (int i = 0; i < blockType.size(); i++) {
-			//for (int j = 0; j < 6; j++)
-			texture.push_back(std::vector<unsigned int>());
-			for (int t = 0; t < 6; t++) {
-				texture[i].push_back(NULL);
-				loadTexture(&texture[i][t], blockType[i].texture[t]);
-			}
+				texture.push_back(NULL);
+				loadTexture(&texture[i], blockType[i].texture);
 		}
 
 		ourShader.use();
@@ -234,22 +215,6 @@ public:
 		return true;
 	}
 
-	//hides faces that are touching to make render more efficient;
-	void createSurfaceList() {
-		surfaces.clear();
-		for (int s = 0; s < 6; s++) {
-			surfaces.push_back(std::vector<Surface>());
-		}
-
-		for (int i = 0; i < loadedBlocks.size(); i++) {
-			for (int j = 0; j < loadedBlocks[i].size(); j++) {
-				for (int s = 0; s < 6; s++) {
-					surfaces[s].push_back(Surface(loadedBlocks[i][j], &texture[i][s], loadedBlocks[i][j]->blockType, s));
-				}
-			}
-		}
-	}
-
 	int renderFrame() {
 		if (glfwWindowShouldClose(window)) {
 			return 0;
@@ -263,11 +228,14 @@ public:
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glBindVertexArray(VBO);
+		glBindVertexArray(VAO);
+
 		//for every loaded surface process and draw them
-		for (int i = 0; i < surfaces.size(); i++) {
+		for (int i = 0; i < loadedBlocks.size(); i++) {
 			//set next texture to be rendered
-			//glActiveTexture(GL_TEXTURE0);
-			//glBindTexture(GL_TEXTURE_2D, *surfaces[i][0].texture);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture[i]);
 			
 			//activate shader
 			ourShader.use();
@@ -275,20 +243,15 @@ public:
 			ourShader.setMat4("projection", camera.projection);
 			ourShader.setMat4("view", camera.update());
 			
-			glBindVertexArray(VBO[i]);
-			glBindVertexArray(VAO[i]);
 			//use individual settings of each block
-			for (int x = 0; x < surfaces[i].size(); x++) {
-				//set next texture to be rendered
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, *surfaces[i][x].texture);
+			for (int x = 0; x < loadedBlocks[i].size(); x++) {
 
 				// calculate the model matrix for each object and pass it to shader before drawing
 				glm::mat4 model = glm::mat4(1.0f);
-				model = glm::translate(model, (*surfaces[i][x].block).pos);
+				model = glm::translate(model, (*loadedBlocks[i][x]).pos);
 				ourShader.setMat4("model", model);
 
-				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
 			}
 			
 		}

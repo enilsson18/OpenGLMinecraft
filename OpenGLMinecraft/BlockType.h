@@ -17,7 +17,7 @@
 class BlockType {
 public:
 	std::string name;
-	std::vector<const char*> texture;
+	const char* texture;
 
 	BlockType() {
 		
@@ -25,19 +25,7 @@ public:
 
 	BlockType(const std::string name, const char* texturePath) {
 		this->name = name;
-		for (int i = 0; i < 6; i++) {
-			texture.push_back(texturePath);
-		}
-	}
-
-	BlockType(const std::string name, std::vector<const char*> textures) {
-		this->name = name;
-		if (textures.size() == 6) {
-			texture = textures;
-		}
-		else {
-			texture.push_back(textures[0]);
-		}
+		texture = texturePath;
 	}
 };
 

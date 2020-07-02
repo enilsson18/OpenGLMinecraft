@@ -38,7 +38,7 @@ int main() {
 
 	for (int x = 0; x < 10; x++) {
 		for (int y = 0; y < 10; y++) {
-			for (int z = 0; z < 10; z++) {
+			for (int z = 0; z < 40; z++) {
 				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-x, -y, -z)));
 			}
 		}
@@ -61,7 +61,6 @@ int main() {
 
 	//generate textures before render
 	graphicsEngine.generateTextures();
-	graphicsEngine.createSurfaceList();
 
 	//std::cout << graphicsEngine.surfaces[0].size() << std::endl;
 
