@@ -21,21 +21,29 @@
 #include <cmath>
 #include <windows.h>
 
+//prototypes
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
 
 const double fps = 60;
 
+Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 1, -5));
+
 int main() {
 	std::cout << "setup" << std::endl;
-	GraphicsEngine graphicsEngine("OpenGL Minecraft", SCR_WIDTH, SCR_HEIGHT);
+
+	GraphicsEngine graphicsEngine("OpenGL Minecraft", mouse_callback, &camera, SCR_WIDTH, SCR_HEIGHT);
+
 	std::cout << "rendering" << std::endl;
 
-	graphicsEngine.addBlockType(BlockType("Container", "resources/textures/container.jpg"));
+	graphicsEngine.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
 	
 	std::vector<Block> blocks;
 
+	/*
 	for (int x = 0; x < 10; x++) {
 		for (int y = 0; y < 10; y++) {
 			for (int z = 0; z < 40; z++) {
@@ -43,10 +51,11 @@ int main() {
 			}
 		}
 	}
+	*/
 
-	/*
+	
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
-	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 0, 0)));
+	/*blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, -1, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-1, -1, 0)));
@@ -62,7 +71,7 @@ int main() {
 	//generate textures before render
 	graphicsEngine.generateTextures();
 
-	//std::cout << graphicsEngine.surfaces[0].size() << std::endl;
+	std::cout << graphicsEngine.loadedBlocks[0].size() << std::endl;
 
 
 	int gameState = 1;
@@ -72,7 +81,7 @@ int main() {
 
 
 		//input
-		processInput(graphicsEngine.window,&graphicsEngine.camera);
+		processInput(graphicsEngine.window,&camera);
 
 		//update game info and send data to renderer
 
@@ -127,10 +136,45 @@ void processInput(GLFWwindow *window, Camera *camera)
 
 	//SPACE
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		(*camera).pos.y -= 0.1f;
+		(*camera).pos.y += 0.1f;
 	}
 	//CTRL
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		(*camera).pos.y += 0.1f;
+		(*camera).pos.y -= 0.1f;
 	}
+}
+
+//mouse callback
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (camera.firstMouse)
+	{
+		camera.lastX = xpos;
+		camera.lastY = ypos;
+		camera.firstMouse = false;
+	}
+
+	float xoffset = xpos - camera.lastX;
+	float yoffset = camera.lastY - ypos; // reversed since y-coordinates go from bottom to top
+	camera.lastX = xpos;
+	camera.lastY = ypos;
+
+	float sensitivity = 0.1f; // change this value to your liking
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	camera.yaw += xoffset;
+	camera.pitch += yoffset;
+
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
+	if (camera.pitch > 89.0f)
+		camera.pitch = 89.0f;
+	if (camera.pitch < -89.0f)
+		camera.pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+	front.y = sin(glm::radians(camera.pitch));
+	front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+	camera.cameraFront = glm::normalize(front);
 }

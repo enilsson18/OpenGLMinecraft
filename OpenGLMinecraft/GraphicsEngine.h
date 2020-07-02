@@ -26,6 +26,7 @@
 #include <sstream>
 #include <iostream>
 
+//callbacks
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window, Camera *camera);
 
@@ -41,7 +42,7 @@ public:
 	unsigned int VBO, VAO;
 
 	//camera
-	Camera camera;
+	Camera *camera;
 
 	//block data
 	std::vector<BlockType> blockType;
@@ -51,9 +52,9 @@ public:
 	//texture data
 	std::vector<unsigned int> texture;
 
-	GraphicsEngine(const char* windowName, const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
+	GraphicsEngine(const char* windowName, void mouse_callback(GLFWwindow* window, double xpos, double ypos), Camera *cam,const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
 		//initialize Camera
-		camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0,-1,-5));
+		camera = cam;
 
 		// glfw: initialize and configure
 		glfwInit();
@@ -70,6 +71,7 @@ public:
 		}
 		glfwMakeContextCurrent(window);
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+		glfwSetCursorPosCallback(window, mouse_callback);
 
 		// glad: load all OpenGL function pointers
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -85,47 +87,53 @@ public:
 
 		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
 		float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		//back
+		-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+		-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
+		-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		//front
+		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+		 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+		 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		//left
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		//right
+		 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+		 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
+		 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+		 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+		 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+		 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 //bottom
+		-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+		-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		//top
+		-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
+		 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+		 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
 		};
 
 		glGenVertexArrays(1, &VAO);
@@ -199,7 +207,7 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		// load image, create texture and generate mipmaps
 		int width, height, nrChannels;
-		stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+		//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 		unsigned char *data = stbi_load(fileName, &width, &height, &nrChannels, 0);
 		if (data)
 		{
@@ -240,8 +248,8 @@ public:
 			//activate shader
 			ourShader.use();
 
-			ourShader.setMat4("projection", camera.projection);
-			ourShader.setMat4("view", camera.update());
+			ourShader.setMat4("projection", (*camera).projection);
+			ourShader.setMat4("view", (*camera).update());
 			
 			//use individual settings of each block
 			for (int x = 0; x < loadedBlocks[i].size(); x++) {

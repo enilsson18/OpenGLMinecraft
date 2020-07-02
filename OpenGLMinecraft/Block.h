@@ -19,7 +19,6 @@ class Block {
 public:
 	BlockType blockType;
 	glm::vec3 pos;
-	//unsigned int ID;
 
 	Block(BlockType blockInfo, glm::vec3 pos) {
 		this->blockType = blockInfo;
