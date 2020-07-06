@@ -41,5 +41,8 @@
     <ClInclude Include="Surface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="PerlinNoise.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

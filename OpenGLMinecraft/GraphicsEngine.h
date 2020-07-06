@@ -52,7 +52,7 @@ public:
 	//texture data
 	std::vector<unsigned int> texture;
 
-	GraphicsEngine(const char* windowName, void mouse_callback(GLFWwindow* window, double xpos, double ypos), Camera *cam,const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
+	GraphicsEngine(const char* windowName, Camera *cam, const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
 		//initialize Camera
 		camera = cam;
 
@@ -71,7 +71,6 @@ public:
 		}
 		glfwMakeContextCurrent(window);
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-		glfwSetCursorPosCallback(window, mouse_callback);
 
 		// glad: load all OpenGL function pointers
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

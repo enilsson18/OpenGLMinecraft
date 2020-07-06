@@ -147,6 +147,7 @@
     <ClInclude Include="BlockType.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GraphicsEngine.h" />
+    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="Surface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
