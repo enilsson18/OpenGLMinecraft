@@ -55,12 +55,12 @@ int main() {
 	
 	std::vector<Block> blocks;
 
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(50);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(75,1);
 
-	for (int x = 0; x < 50; x++) {
+	for (int x = 0; x < 75; x++) {
 		for (int y = 0; y < 2; y++) {
-			for (int z = 0; z < 50; z++) {
-				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + -int((heightMap[x][z])), z)));
+			for (int z = 0; z < 75; z++) {
+				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z]) * 30), z)));
 			}
 		}
 	}
@@ -140,31 +140,33 @@ void processInput(GLFWwindow *window, Camera *camera)
 		pastClampMouse = clampMouse;
 	}
 
+	float velocity = 0.2f;
+
 	//camera controls
 	//W
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		(*camera).pos.z += 0.1f;
+		(*camera).pos += velocity * (*camera).Front;
 	}
 	//A
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		(*camera).pos.x += 0.1f;
+		(*camera).pos -= velocity * (*camera).Right;
 	}
 	//S
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		(*camera).pos.z -= 0.1f;
+		(*camera).pos -= velocity * (*camera).Front;
 	}
 	//D
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		(*camera).pos.x -= 0.1f;
+		(*camera).pos += velocity * (*camera).Right;
 	}
 
 	//SPACE
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		(*camera).pos.y += 0.1f;
+		(*camera).pos += velocity * glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 	//CTRL
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		(*camera).pos.y -= 0.1f;
+		(*camera).pos -= velocity * glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 }
 
@@ -213,10 +215,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		if (camera.pitch < -89.0f)
 			camera.pitch = -89.0f;
 
-		glm::vec3 front;
-		front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-		front.y = sin(glm::radians(camera.pitch));
-		front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-		camera.cameraFront = glm::normalize(front);
+		//update vectors
+		camera.updateCameraVectors();
 	}
 }

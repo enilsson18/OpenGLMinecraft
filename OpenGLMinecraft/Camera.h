@@ -24,8 +24,9 @@ public:
 	//Shader *shader;
 
 	//camera calc values
-	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 Right;
 
 	bool firstMouse = true;
 	float yaw = 90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
@@ -78,9 +79,23 @@ public:
 	glm::mat4 update() {
 		view = glm::mat4(1.0f);
 		view = glm::translate(view, pos);
-		view = glm::lookAt(pos, pos + cameraFront, cameraUp);
+		view = glm::lookAt(pos, pos + Front, Up);
 
 		return view;
+	}
+
+	//allows for easy camera movement
+	void updateCameraVectors()
+	{
+		// calculate the new Front vector
+		glm::vec3 front;
+		front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		front.y = sin(glm::radians(pitch));
+		front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		Front = glm::normalize(front);
+		// also re-calculate the Right and Up vector
+		Right = glm::normalize(glm::cross(Front, glm::vec3(0.0f, 1.0f, 0.0f)));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		Up = glm::normalize(glm::cross(Right, Front));
 	}
 
 	//Not finished

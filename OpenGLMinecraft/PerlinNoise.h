@@ -19,59 +19,96 @@ class PerlinNoise {
 public:
 
 	//methods
-	static std::vector<std::vector<float>> generate(int size) {
+	//octaves is the number of subdivision levels
+	//and must be cleanly divisible by the size
+	static std::vector<std::vector<float>> generate(int size, unsigned int octaves) {
 		std::vector<glm::vec2> gradientVectorOptions;
 		gradientVectorOptions.push_back(glm::vec2(1, 1));
 		gradientVectorOptions.push_back(glm::vec2(-1, 1));
 		gradientVectorOptions.push_back(glm::vec2(-1, -1));
 		gradientVectorOptions.push_back(glm::vec2(1, -1));
-		
+
+		//ensure octaves are divisible worst case scenario being 1
+		while (size % octaves != 0) {
+			octaves -= 1;
+		}
+
+		int octaveSize = size/octaves;
+
 		srand(time(0));
 
 		//make gradient vector maps
-		int subDivisionSize = 1;
 		std::vector<std::vector<glm::vec2>> gradientVectors;
-		for (int y = 0; y < size; y += 1) {
+		for (int y = 0; y <= octaves; y += 1) {
 			gradientVectors.push_back(std::vector<glm::vec2>());
-			for (int x = 0; x < size; x += 1) {
+			for (int x = 0; x <= octaves; x += 1) {
 				//generates random number between 0 and 3
-				gradientVectors[y].push_back(gradientVectorOptions[int(((double)rand() / (RAND_MAX) * gradientVectorOptions.size()))]);
+				//gradientVectors[y].push_back(gradientVectorOptions[int(((double)rand() / (RAND_MAX) * gradientVectorOptions.size()))]);
+				float _x, _y;
+				float angle = (double)rand() / (RAND_MAX) * 2 * 3.1415926535f;
+				_x = cos(angle);
+				_y = sin(angle);
+
+				gradientVectors[y].push_back(glm::vec2(_x, _y));
 			}
 		}
 
 		std::cout << "finished gradient";
 
-		std::vector<std::vector<float>> subDivision;
-		for (int y = 0; y < size; y++) {
-			//make new line
-			subDivision.push_back(std::vector<float>());
-			for (int x = 0; x < size; x++) {
-				//find direction vectors for each corner
-				//oriented
-				//1    2
-				//3    4
-				std::vector<glm::vec2> directionVectors;
-				directionVectors.push_back(glm::vec2(0 + (x + 0.5f), 0 + (y + 0.5f)));
-				directionVectors.push_back(glm::vec2((x + 0.5f) - (size), 0 + (y + 0.5f)));
-				directionVectors.push_back(glm::vec2(0 + (x + 0.5f), (y + 0.5f) - (size)));
-				directionVectors.push_back(glm::vec2((x + 0.5f) - (size), (y + 0.5f) - (size)));
+		std::vector<std::vector<float>> noiseMap;
+		for (int _y = 0; _y < octaves; _y++) {
+			for (int _x = 0; _x < octaves; _x++) {
+				//octave subdivision
+				for (int y = 0; y < octaveSize; y++) {
+					//make new line
+					if (_x == 0) {
+						noiseMap.push_back(std::vector<float>());
+					}
+					for (int x = 0; x < octaveSize; x++) {
+						//find direction vectors for each corner
+						//oriented
+						//1    2
+						//3    4
+						std::vector<glm::vec2> directionVectors;
+						directionVectors.push_back(glm::vec2(0 + (x + 0.5f), 0 + (y + 0.5f)));
+						directionVectors.push_back(glm::vec2((x + 0.5f) - (octaveSize), 0 + (y + 0.5f)));
+						directionVectors.push_back(glm::vec2(0 + (x + 0.5f), (y + 0.5f) - (octaveSize)));
+						directionVectors.push_back(glm::vec2((x + 0.5f) - (octaveSize), (y + 0.5f) - (octaveSize)));
 
-				//dot products
-				std::vector<float> dp;
-				dp.push_back(glm::dot(gradientVectors[0][0], directionVectors[0]));
-				dp.push_back(glm::dot(gradientVectors[0][1], directionVectors[1]));
-				dp.push_back(glm::dot(gradientVectors[1][0], directionVectors[2]));
-				dp.push_back(glm::dot(gradientVectors[1][1], directionVectors[3]));
+						//dot products
+						std::vector<float> dp;
+						dp.push_back(glm::dot(gradientVectors[_x][_y], directionVectors[0]));
+						dp.push_back(glm::dot(gradientVectors[_x+1][_y], directionVectors[1]));
+						dp.push_back(glm::dot(gradientVectors[_x][_y+1], directionVectors[2]));
+						dp.push_back(glm::dot(gradientVectors[_x+1][_y+1], directionVectors[3]));
 
-				//interpolation step
-				float AB = dp[0] + ((x + 0.5f) / size) * (dp[1] - dp[0]);
-				float CD = dp[2] + ((x + 0.5f) / size) * (dp[3] - dp[2]);
-				subDivision[y].push_back(AB + ((y + 0.5f) / size) * (CD - AB));
+						//interpolation step
+						float AB = dp[0] + ((x + 0.5f) / size) * (dp[1] - dp[0]);
+						float CD = dp[2] + ((x + 0.5f) / size) * (dp[3] - dp[2]);
+						//finish interpolation and scale
+						noiseMap[_y*octaveSize + y].push_back((AB + ((y + 0.5f) / octaveSize) * (CD - AB)) / octaveSize);
+					}
+				}
 			}
 		}
 
+		//fade function
+		/*
+		for (int y = 0; y < noiseMap.size(); y++) {
+			for (int x = 0; x < noiseMap[y].size(); x++) {
+				noiseMap[y][x] = 6 * pow(noiseMap[y][x], 5) - 15 * pow(noiseMap[y][x], 4) + 10 * pow(noiseMap[y][x], 3);
+				if (noiseMap[y][x] > 1) {
+					noiseMap[y][x] = 1;
+				}
+				else if (noiseMap[y][x] < -1) {
+					noiseMap[y][x] = -1;
+				}
+			}
+		}
+		*/
+
 		std::cout << "finished subdivision" << std::endl;
-		return subDivision;
+		return noiseMap;
 	}
 };
 

@@ -86,53 +86,53 @@ public:
 
 		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
 		float vertices[] = {
-		//back
-		-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-		-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
-		-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+			//back
+			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+			-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
+			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
 
-		//front
-		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-		 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-		 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			//front
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
 
-		//left
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
-		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-		-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+			//left
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
 
-		//right
-		 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
-		 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
-		 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-		 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-		 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-		 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+			//right
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
 
-		 //bottom
-		-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-		 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-		-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-		-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+			 //bottom
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
 
-		//top
-		-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
-		 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-		 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
+			//top
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
 		};
 
 		glGenVertexArrays(1, &VAO);
@@ -177,8 +177,8 @@ public:
 	void generateTextures() {
 		texture.clear();
 		for (int i = 0; i < blockType.size(); i++) {
-				texture.push_back(NULL);
-				loadTexture(&texture[i], blockType[i].texture);
+			texture.push_back(NULL);
+			loadTexture(&texture[i], blockType[i].texture);
 		}
 
 		ourShader.use();
@@ -243,13 +243,13 @@ public:
 			//set next texture to be rendered
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture[i]);
-			
+
 			//activate shader
 			ourShader.use();
 
 			ourShader.setMat4("projection", (*camera).projection);
 			ourShader.setMat4("view", (*camera).update());
-			
+
 			//use individual settings of each block
 			for (int x = 0; x < loadedBlocks[i].size(); x++) {
 
@@ -260,9 +260,9 @@ public:
 
 				glDrawArrays(GL_TRIANGLES, 0, 36);
 			}
-			
+
 		}
-		
+
 
 		//swap the buffers for smooth frames and poll events
 		glfwSwapBuffers(window);
