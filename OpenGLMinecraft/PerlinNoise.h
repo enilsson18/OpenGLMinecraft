@@ -15,13 +15,17 @@
 #include <string>
 #include <iostream>
 
+float fade(float num);
+
 class PerlinNoise {
 public:
 
 	//methods
-	//octaves is the number of subdivision levels
-	//and must be cleanly divisible by the size
-	static std::vector<std::vector<float>> generate(int size, unsigned int octaves) {
+	//octaves is the number of subdivision levels and must be cleanly divisible by the size
+	//if detail is 1 only one pass will be made and no extra detail will be added
+	//detail amplitude is the fraction of amplitude to recursivly be removed
+	//octave detail scale must be greater than 1
+	static std::vector<std::vector<float>> generate(int size, unsigned int octaves, float amplitude, int detail, int octaveDetailScale, float detailAmplitudeScale) {
 		std::vector<glm::vec2> gradientVectorOptions;
 		gradientVectorOptions.push_back(glm::vec2(1, 1));
 		gradientVectorOptions.push_back(glm::vec2(-1, 1));
@@ -83,32 +87,41 @@ public:
 						dp.push_back(glm::dot(gradientVectors[_x+1][_y+1], directionVectors[3]));
 
 						//interpolation step
-						float AB = dp[0] + ((x + 0.5f) / size) * (dp[1] - dp[0]);
-						float CD = dp[2] + ((x + 0.5f) / size) * (dp[3] - dp[2]);
+						float AB = dp[0] + ((x + 0.5f) / octaveSize) * (dp[1] - dp[0]);
+						float CD = dp[2] + ((x + 0.5f) / octaveSize) * (dp[3] - dp[2]);
 						//finish interpolation and scale
-						noiseMap[_y*octaveSize + y].push_back((AB + ((y + 0.5f) / octaveSize) * (CD - AB)) / octaveSize);
+						float ABCD = ((AB + ((y + 0.5f) / octaveSize) * (CD - AB)) / octaveSize);
+						ABCD = ((ABCD + 1) / 2) * amplitude;
+						noiseMap[_y*octaveSize + y].push_back(ABCD);
 					}
 				}
 			}
 		}
 
-		//fade function
-		/*
-		for (int y = 0; y < noiseMap.size(); y++) {
-			for (int x = 0; x < noiseMap[y].size(); x++) {
-				noiseMap[y][x] = 6 * pow(noiseMap[y][x], 5) - 15 * pow(noiseMap[y][x], 4) + 10 * pow(noiseMap[y][x], 3);
-				if (noiseMap[y][x] > 1) {
-					noiseMap[y][x] = 1;
-				}
-				else if (noiseMap[y][x] < -1) {
-					noiseMap[y][x] = -1;
+		if (detail > 1 && octaves != size) {
+			//increase the number of octaves so more detail can be added
+			int newOctaves = octaves * octaveDetailScale;
+			while (size % newOctaves != 0) {
+				newOctaves += 1;
+			}
+
+			std::vector<std::vector<float>> newNoiseMap = generate(size, newOctaves, amplitude * detailAmplitudeScale, detail - 1, octaveDetailScale, detailAmplitudeScale);
+
+			for (int y = 0; y < noiseMap.size(); y++) {
+				for (int x = 0; x < noiseMap.size(); x++) {
+					//add the maps together and subtract the amplitude of the detail so the final amplitude remains the same.
+					noiseMap[y][x] += (newNoiseMap[y][x]) - (amplitude * detailAmplitudeScale);
 				}
 			}
 		}
-		*/
 
 		std::cout << "finished subdivision" << std::endl;
 		return noiseMap;
+	}
+
+	//fade function
+	static float fade(float num) {
+		return 6 * pow(num, 5) - 15 * pow(num, 4) + 10 * pow(num, 3);
 	}
 };
 

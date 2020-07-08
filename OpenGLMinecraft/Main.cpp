@@ -38,7 +38,7 @@ const unsigned int SCR_HEIGHT = 900;
 
 const double fps = 60;
 
-Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 1, -5));
+Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
 
 int main() {
 	std::cout << "setup" << std::endl;
@@ -55,19 +55,20 @@ int main() {
 	
 	std::vector<Block> blocks;
 
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(75,1);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 4, 40, 2, 5, 0.1);
 
-	for (int x = 0; x < 75; x++) {
+	for (int x = 0; x < 100; x++) {
 		for (int y = 0; y < 2; y++) {
-			for (int z = 0; z < 75; z++) {
-				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z]) * 30), z)));
+			for (int z = 0; z < 100; z++) {
+				//std::cout << heightMap[x][z] << std::endl;
+				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z])), z)));
 			}
 		}
 	}
 	
 
 	
-	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
+	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
 	/*blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, -1, 0)));
@@ -111,7 +112,7 @@ int main() {
 		std::chrono::milliseconds difference(std::chrono::time_point_cast<std::chrono::milliseconds>(after) - std::chrono::time_point_cast<std::chrono::milliseconds>(now));
 
 		int sleepDuration = (1000 / fps) - difference.count();
-		std::cout << sleepDuration << std::endl;
+		std::cout << "FPS: " << 1000/difference.count() << std::endl;
 		if (sleepDuration < 0) {
 			sleepDuration = 0;
 		}
