@@ -55,11 +55,11 @@ int main() {
 	
 	std::vector<Block> blocks;
 
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 4, 40, 2, 5, 0.1);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
 
-	for (int x = 0; x < 100; x++) {
-		for (int y = 0; y < 2; y++) {
-			for (int z = 0; z < 100; z++) {
+	for (int x = 0; x < 16; x++) {
+		for (int y = 0; y < 3; y++) {
+			for (int z = 0; z < 15; z++) {
 				//std::cout << heightMap[x][z] << std::endl;
 				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z])), z)));
 			}
@@ -69,6 +69,7 @@ int main() {
 
 	
 	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
+	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 1, 1)));
 	/*blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-1, 0, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, -1, 0)));
@@ -83,6 +84,7 @@ int main() {
 	}
 
 	//generate textures before render
+	graphicsEngine.compileVertices();
 	graphicsEngine.generateTextures();
 
 	//std::cout << graphicsEngine.loadedBlocks[0].size() << std::endl;
@@ -111,8 +113,13 @@ int main() {
 		std::chrono::system_clock::time_point after = std::chrono::system_clock::now();
 		std::chrono::milliseconds difference(std::chrono::time_point_cast<std::chrono::milliseconds>(after) - std::chrono::time_point_cast<std::chrono::milliseconds>(now));
 
-		int sleepDuration = (1000 / fps) - difference.count();
-		std::cout << "FPS: " << 1000/difference.count() << std::endl;
+		int diffCount = difference.count();
+		if (diffCount == 0) {
+			diffCount = 1;
+		}
+
+		int sleepDuration = (1000 / fps) - diffCount;
+		std::cout << "FPS: " << 1000/diffCount << std::endl;
 		if (sleepDuration < 0) {
 			sleepDuration = 0;
 		}
@@ -141,7 +148,7 @@ void processInput(GLFWwindow *window, Camera *camera)
 		pastClampMouse = clampMouse;
 	}
 
-	float velocity = 0.2f;
+	float velocity = 1.0f;
 
 	//camera controls
 	//W

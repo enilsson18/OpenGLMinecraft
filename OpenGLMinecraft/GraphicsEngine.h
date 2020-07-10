@@ -33,6 +33,7 @@ void processInput(GLFWwindow *window, Camera *camera);
 class GraphicsEngine {
 
 public:
+
 	GLFWwindow* window;
 
 	//shader
@@ -83,72 +84,6 @@ public:
 
 		// build and compile our shader zprogram
 		ourShader = Shader("shaders/6.3.coordinate_systems.vs", "shaders/6.3.coordinate_systems.fs");
-
-		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
-		float vertices[] = {
-			//back
-			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-			-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
-			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
-
-			//front
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-
-			//left
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
-
-			//right
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
-			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
-
-			 //bottom
-			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
-
-			//top
-			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
-		};
-
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		// position attribute
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-		// texture coord attribute
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(1);
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -222,6 +157,105 @@ public:
 		return true;
 	}
 
+	void compileVertices() {
+		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
+		float cube[] = {
+			//back
+			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
+			-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
+			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+
+			//front
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+
+			//left
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+
+			//right
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+
+			 //bottom
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+
+			//top
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
+		};
+
+		//compile values
+		float vertices[138240];
+		
+		int vertexCount = 0;
+		int count = 0;
+
+		for (int i = 0; i < loadedBlocks[0].size(); i++) {
+			count = 0;
+			for (int x = 0; x < sizeof(cube)/sizeof(cube[0]); x++) {
+				//std::cout << vertexCount << " " << x  << " " << count << std::endl;
+				if (count >= 3) {
+					//add tex coords
+					vertices[vertexCount] = cube[x];
+				}
+				else if (count == 0){
+					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.x + cube[x];
+				}
+				else if (count == 1) {
+					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.y + cube[x];
+				}
+				else if (count == 2) {
+					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.z + cube[x];
+				}
+
+				count += 1;
+				count %= 5;
+
+				vertexCount += 1;
+			}
+		}
+
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), vertices, GL_STATIC_DRAW);
+
+		// position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+		// texture coord attribute
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+	}
+
 	int renderFrame() {
 		if (glfwWindowShouldClose(window)) {
 			return 0;
@@ -234,10 +268,32 @@ public:
 		//clear the screen and start next frame
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//std::cout << "bind" << std::endl;
 
 		glBindVertexArray(VBO);
 		glBindVertexArray(VAO);
 
+		//std::cout << "texture" << std::endl;
+		//set next texture to be rendered
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+
+		//std::cout << "shader" << std::endl;
+		//activate shader
+		ourShader.use();
+
+		//std::cout << "proj view" << std::endl;
+		ourShader.setMat4("projection", (*camera).projection);
+		ourShader.setMat4("view", (*camera).update());
+
+		//std::cout << "model" << std::endl;
+		glm::mat4 model = glm::mat4(1.0f);
+		ourShader.setMat4("model", model);
+
+		//std::cout << "draw" << std::endl;
+		glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[0].size());
+
+		/*
 		//for every loaded surface process and draw them
 		for (int i = 0; i < loadedBlocks.size(); i++) {
 			//set next texture to be rendered
@@ -262,9 +318,11 @@ public:
 			}
 
 		}
+		*/
 
 
 		//swap the buffers for smooth frames and poll events
+		//std::cout << "events" << std::endl;
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
