@@ -51,17 +51,24 @@ int main() {
 	std::cout << "rendering" << std::endl;
 
 	//graphicsEngine.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
+	graphicsEngine.addBlockType(BlockType("Grass", "resources/textures/GrassUnwrapped.jpg"));
+	//graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
 	
 	std::vector<Block> blocks;
 
+	//std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
 	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
 
-	for (int x = 0; x < 32; x++) {
+	for (int x = 0; x < 100; x++) {
 		for (int y = 0; y < 3; y++) {
-			for (int z = 0; z < 32; z++) {
+			for (int z = 0; z < 100; z++) {
 				//std::cout << heightMap[x][z] << std::endl;
-				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z])), z)));
+				if (true) {
+					blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z])), z)));
+				}
+				else if (y > 0) {
+					blocks.push_back(Block(graphicsEngine.blockType[1], glm::vec3(x, y + int((heightMap[x][z])), z)));
+				}
 			}
 		}
 	}

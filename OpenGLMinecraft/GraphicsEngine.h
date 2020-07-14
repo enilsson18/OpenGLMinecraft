@@ -30,12 +30,6 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window, Camera *camera);
 
-//blocks are 16 x so if the MapChunkSize was 8, the map would be 128x128
-const int MapChunkSize = 1;
-//const int ChunkSize = 276480;
-//const int ChunkSize = 138240;
-const int ChunkSize = 165888;
-
 class GraphicsEngine {
 
 public:
@@ -46,7 +40,8 @@ public:
 	Shader ourShader;
 
 	//cube vertex data
-	unsigned int VBO[MapChunkSize][MapChunkSize], VAO[MapChunkSize][MapChunkSize];
+	std::vector<std::vector<unsigned int>> VBO;
+	std::vector<std::vector<unsigned int>> VAO;
 
 	//camera
 	Camera *camera;
@@ -57,7 +52,7 @@ public:
 	std::vector<std::vector<std::vector<Block*>>> loadedBlocks;
 
 	//chunkmap is the vertex data for each chunk
-	float chunkMap[MapChunkSize][MapChunkSize][ChunkSize];
+	std::vector<std::vector<std::vector<float>>> chunkMap;
 
 	//texture data
 	std::vector<unsigned int> texture;
@@ -108,21 +103,6 @@ public:
 		//addBlock(&Block(blockType[0], glm::vec3(0, 0, 0)));
 
 		//generateTextures();
-
-		//clear all previous data and make fresh slate for the blocks to be added
-		setupWorld();
-	}
-
-	void setupWorld() {
-		//make the map sizes
-		loadedBlocks.clear();
-		for (int y = 0; y < MapChunkSize; y++) {
-			loadedBlocks.push_back(std::vector<std::vector<Block*>>());
-			for (int x = 0; x < MapChunkSize; x++) {
-				loadedBlocks[y].push_back(std::vector<Block*>());
-				
-			}
-		}
 	}
 
 	//add block types and a new column to insert block data
@@ -160,8 +140,26 @@ public:
 		int x = std::floor((*block).pos.x / 16);
 		int y = std::floor((*block).pos.z / 16);
 
-		if (x >= MapChunkSize || y >= MapChunkSize) {
-			return false;
+		if (y >= chunkMap.size()) {
+			int size = (y - chunkMap.size());
+
+			for (int i = 0; i <= size; i++) {
+				chunkMap.push_back(std::vector<std::vector<float>>());
+				loadedBlocks.push_back(std::vector<std::vector<Block*>>());
+				VBO.push_back(std::vector<unsigned int>());
+				VAO.push_back(std::vector<unsigned int>());
+			}
+		}
+
+		if (x >= chunkMap[y].size()) {
+			int size = (x - chunkMap[y].size());
+
+			for (int i = 0; i <= size; i++) {
+				chunkMap[y].push_back(std::vector<float>());
+				loadedBlocks[y].push_back(std::vector<Block*>());
+				VBO[y].push_back(NULL);
+				VAO[y].push_back(NULL);
+			}
 		}
 
 		//std::cout << x << " " << y << std::endl;
@@ -253,9 +251,8 @@ public:
 		//compile values
 		//float vertices[138240];
 		
-		for (int _y = 0; _y < MapChunkSize; _y++) {
-			for (int _x = 0; _x < MapChunkSize; _x++) {
-				int vertexCount = 0;
+		for (int _y = 0; _y < chunkMap.size(); _y++) {
+			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 				int count = 0;
 
 				for (int i = 0; i < loadedBlocks[_y][_x].size(); i++) {
@@ -263,31 +260,26 @@ public:
 					for (int x = 0; x < sizeof(cube) / sizeof(cube[0]); x++) {
 						//std::cout << vertexCount << " " << x  << " " << count << std::endl;
 						if (count == 0) {
-							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.x + cube[x];
+							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.x + cube[x]);
 						}
 						else if (count == 1) {
-							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.y + cube[x];
+							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.y + cube[x]);
 						}
 						else if (count == 2) {
-							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.z + cube[x];
+							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.z + cube[x]);
 						}
 						else if (count == 3) {
 							//tex coords
-							chunkMap[_y][_x][vertexCount] = cube[x];
+							chunkMap[_y][_x].push_back(cube[x]);
 						}
 						else if (count == 4) {
 							//tex coords and also add which texture this is reffering to
-							chunkMap[_y][_x][vertexCount] = cube[x];
-							//since we are doing two steps in one since the texture id is not a member of cube, we must account for the vertex count aswell
-							vertexCount += 1;
-
-							chunkMap[_y][_x][vertexCount] = 0;
+							chunkMap[_y][_x].push_back(cube[x]);
+							chunkMap[_y][_x].push_back(0);
 						}
 
 						count += 1;
 						count %= 5;
-
-						vertexCount += 1;
 					}
 				}
 
@@ -297,7 +289,7 @@ public:
 				glBindVertexArray(VAO[_y][_x]);
 
 				glBindBuffer(GL_ARRAY_BUFFER, VBO[_y][_x]);
-				glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), chunkMap[_y][_x], GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, chunkMap[_y][_x].size() * sizeof(float), chunkMap[_y][_x].data(), GL_STATIC_DRAW);
 
 				// position attribute
 				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -328,8 +320,8 @@ public:
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//std::cout << "bind" << std::endl;
-		for (int _y = 0; _y < MapChunkSize; _y++) {
-			for (int _x = 0; _x < MapChunkSize; _x++) {
+		for (int _y = 0; _y < chunkMap.size(); _y++) {
+			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 
 				glBindVertexArray(VBO[_y][_x]);
 				glBindVertexArray(VAO[_y][_x]);

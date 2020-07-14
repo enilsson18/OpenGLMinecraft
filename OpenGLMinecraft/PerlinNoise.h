@@ -57,7 +57,7 @@ public:
 			}
 		}
 
-		std::cout << "finished gradient";
+		//std::cout << "finished gradient" << std::endl;
 
 		std::vector<std::vector<float>> noiseMap;
 		for (int _y = 0; _y < octaves; _y++) {
@@ -115,7 +115,7 @@ public:
 			}
 		}
 
-		std::cout << "finished subdivision" << std::endl;
+		//std::cout << "finished subdivision" << std::endl;
 		return noiseMap;
 	}
 
