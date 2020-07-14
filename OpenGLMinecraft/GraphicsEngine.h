@@ -30,6 +30,12 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window, Camera *camera);
 
+//blocks are 16 x so if the MapChunkSize was 8, the map would be 128x128
+const int MapChunkSize = 1;
+//const int ChunkSize = 276480;
+//const int ChunkSize = 138240;
+const int ChunkSize = 165888;
+
 class GraphicsEngine {
 
 public:
@@ -40,15 +46,18 @@ public:
 	Shader ourShader;
 
 	//cube vertex data
-	unsigned int VBO, VAO;
+	unsigned int VBO[MapChunkSize][MapChunkSize], VAO[MapChunkSize][MapChunkSize];
 
 	//camera
 	Camera *camera;
 
 	//block data
 	std::vector<BlockType> blockType;
-	//this vector is effectivly a way to divide the blocks based on block type for drawing. They are sorted before the main loop runs and requires less comparasons for assigning textures.
-	std::vector<std::vector<Block*>> loadedBlocks;
+	//this vector is effectivly a way to divide the blocks based on block type for drawing. They are arranged based on chunk position since texture is meaningless now.
+	std::vector<std::vector<std::vector<Block*>>> loadedBlocks;
+
+	//chunkmap is the vertex data for each chunk
+	float chunkMap[MapChunkSize][MapChunkSize][ChunkSize];
 
 	//texture data
 	std::vector<unsigned int> texture;
@@ -99,34 +108,66 @@ public:
 		//addBlock(&Block(blockType[0], glm::vec3(0, 0, 0)));
 
 		//generateTextures();
+
+		//clear all previous data and make fresh slate for the blocks to be added
+		setupWorld();
+	}
+
+	void setupWorld() {
+		//make the map sizes
+		loadedBlocks.clear();
+		for (int y = 0; y < MapChunkSize; y++) {
+			loadedBlocks.push_back(std::vector<std::vector<Block*>>());
+			for (int x = 0; x < MapChunkSize; x++) {
+				loadedBlocks[y].push_back(std::vector<Block*>());
+				
+			}
+		}
 	}
 
 	//add block types and a new column to insert block data
 	void addBlockType(BlockType blockType) {
 		this->blockType.push_back(blockType);
 
-		loadedBlocks.push_back(std::vector<Block*>());
+		//loadedBlocks.push_back(std::vector<Block*>());
 	}
 
 	//textures are in order of the block types as they were added to the manager
 	void generateTextures() {
 		texture.clear();
+
 		for (int i = 0; i < blockType.size(); i++) {
 			texture.push_back(NULL);
 			loadTexture(&texture[i], blockType[i].texture);
+
 		}
 
 		ourShader.use();
-		ourShader.setInt("texture", 0);
+		ourShader.setInt("texture0", 0);
+		if (blockType.size() > 1) {
+			ourShader.setInt("texture1", 1);
+		}
+		if (blockType.size() > 2) {
+			ourShader.setInt("texture2", 2);
+		}
+		if (blockType.size() > 3) {
+			ourShader.setInt("texture3", 3);
+		}
 	}
 
-	void addBlock(Block *block) {
-		//block type and loaded blocks 1st dimension should always be the same size because they are both only changed in the add block type method
-		for (int i = 0; i < blockType.size(); i++) {
-			if (blockType[i].name == (*block).blockType.name) {
-				loadedBlocks[i].push_back(block);
-			}
+	bool addBlock(Block *block) {
+		//loads the block and puts it in the chunk it is supposed to be rendered in.
+		int x = std::floor((*block).pos.x / 16);
+		int y = std::floor((*block).pos.z / 16);
+
+		if (x >= MapChunkSize || y >= MapChunkSize) {
+			return false;
 		}
+
+		//std::cout << x << " " << y << std::endl;
+		loadedBlocks[y][x].push_back(block);
+
+		return true;
 	}
 
 	bool loadTexture(unsigned int *texture, const char* fileName) {
@@ -210,50 +251,68 @@ public:
 		};
 
 		//compile values
-		float vertices[138240];
+		//float vertices[138240];
 		
-		int vertexCount = 0;
-		int count = 0;
+		for (int _y = 0; _y < MapChunkSize; _y++) {
+			for (int _x = 0; _x < MapChunkSize; _x++) {
+				int vertexCount = 0;
+				int count = 0;
 
-		for (int i = 0; i < loadedBlocks[0].size(); i++) {
-			count = 0;
-			for (int x = 0; x < sizeof(cube)/sizeof(cube[0]); x++) {
-				//std::cout << vertexCount << " " << x  << " " << count << std::endl;
-				if (count >= 3) {
-					//add tex coords
-					vertices[vertexCount] = cube[x];
-				}
-				else if (count == 0){
-					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.x + cube[x];
-				}
-				else if (count == 1) {
-					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.y + cube[x];
-				}
-				else if (count == 2) {
-					vertices[vertexCount] = (*loadedBlocks[0][i]).pos.z + cube[x];
+				for (int i = 0; i < loadedBlocks[_y][_x].size(); i++) {
+					count = 0;
+					for (int x = 0; x < sizeof(cube) / sizeof(cube[0]); x++) {
+						//std::cout << vertexCount << " " << x  << " " << count << std::endl;
+						if (count == 0) {
+							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.x + cube[x];
+						}
+						else if (count == 1) {
+							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.y + cube[x];
+						}
+						else if (count == 2) {
+							chunkMap[_y][_x][vertexCount] = (*loadedBlocks[_y][_x][i]).pos.z + cube[x];
+						}
+						else if (count == 3) {
+							//tex coords
+							chunkMap[_y][_x][vertexCount] = cube[x];
+						}
+						else if (count == 4) {
+							//tex coords and also add which texture this is reffering to
+							chunkMap[_y][_x][vertexCount] = cube[x];
+							//since we are doing two steps in one since the texture id is not a member of cube, we must account for the vertex count aswell
+							vertexCount += 1;
+
+							chunkMap[_y][_x][vertexCount] = 0;
+						}
+
+						count += 1;
+						count %= 5;
+
+						vertexCount += 1;
+					}
 				}
 
-				count += 1;
-				count %= 5;
+				glGenVertexArrays(1, &VAO[_y][_x]);
+				glGenBuffers(1, &VBO[_y][_x]);
 
-				vertexCount += 1;
+				glBindVertexArray(VAO[_y][_x]);
+
+				glBindBuffer(GL_ARRAY_BUFFER, VBO[_y][_x]);
+				glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), chunkMap[_y][_x], GL_STATIC_DRAW);
+
+				// position attribute
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+				glEnableVertexAttribArray(0);
+				// texture coord attribute
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+				glEnableVertexAttribArray(1);
+				// texture label attribute
+				glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
+				glEnableVertexAttribArray(2);
+
+				//std::cout << vertexCount / (6*6*6) << std::endl;
+				//std::cout << loadedBlocks[_y][_x].size() << std::endl;
 			}
 		}
-
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), vertices, GL_STATIC_DRAW);
-
-		// position attribute
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-		// texture coord attribute
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(1);
 	}
 
 	int renderFrame() {
@@ -269,29 +328,45 @@ public:
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//std::cout << "bind" << std::endl;
+		for (int _y = 0; _y < MapChunkSize; _y++) {
+			for (int _x = 0; _x < MapChunkSize; _x++) {
 
-		glBindVertexArray(VBO);
-		glBindVertexArray(VAO);
+				glBindVertexArray(VBO[_y][_x]);
+				glBindVertexArray(VAO[_y][_x]);
 
-		//std::cout << "texture" << std::endl;
-		//set next texture to be rendered
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
+				//std::cout << "texture" << std::endl;
+				//set next texture to be rendered
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texture[0]);
+				if (blockType.size() > 1) {
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, texture[1]);
+				}
+				if (blockType.size() > 2) {
+					glActiveTexture(GL_TEXTURE2);
+					glBindTexture(GL_TEXTURE_2D, texture[2]);
+				}
+				if (blockType.size() > 3) {
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, texture[3]);
+				}
 
-		//std::cout << "shader" << std::endl;
-		//activate shader
-		ourShader.use();
+				//std::cout << "shader" << std::endl;
+				//activate shader
+				ourShader.use();
 
-		//std::cout << "proj view" << std::endl;
-		ourShader.setMat4("projection", (*camera).projection);
-		ourShader.setMat4("view", (*camera).update());
+				//std::cout << "proj view" << std::endl;
+				ourShader.setMat4("projection", (*camera).projection);
+				ourShader.setMat4("view", (*camera).update());
 
-		//std::cout << "model" << std::endl;
-		glm::mat4 model = glm::mat4(1.0f);
-		ourShader.setMat4("model", model);
+				//std::cout << "model" << std::endl;
+				glm::mat4 model = glm::mat4(1.0f);
+				ourShader.setMat4("model", model);
 
-		//std::cout << "draw" << std::endl;
-		glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[0].size());
+				//std::cout << "draw" << std::endl;
+				glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[_y][_x].size());
+			}
+		}
 
 		/*
 		//for every loaded surface process and draw them

@@ -57,9 +57,9 @@ int main() {
 
 	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
 
-	for (int x = 0; x < 16; x++) {
+	for (int x = 0; x < 32; x++) {
 		for (int y = 0; y < 3; y++) {
-			for (int z = 0; z < 15; z++) {
+			for (int z = 0; z < 32; z++) {
 				//std::cout << heightMap[x][z] << std::endl;
 				blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(x, y + int((heightMap[x][z])), z)));
 			}
@@ -111,19 +111,20 @@ int main() {
 
 		//end of timer sleep and normalize the clock
 		std::chrono::system_clock::time_point after = std::chrono::system_clock::now();
-		std::chrono::milliseconds difference(std::chrono::time_point_cast<std::chrono::milliseconds>(after) - std::chrono::time_point_cast<std::chrono::milliseconds>(now));
+		std::chrono::microseconds difference(std::chrono::time_point_cast<std::chrono::microseconds>(after) - std::chrono::time_point_cast<std::chrono::microseconds>(now));
 
 		int diffCount = difference.count();
 		if (diffCount == 0) {
 			diffCount = 1;
 		}
 
-		int sleepDuration = (1000 / fps) - diffCount;
-		std::cout << "FPS: " << 1000/diffCount << std::endl;
+		int sleepDuration = ((1000000 / fps * 1000) - diffCount)/1000000;
+		std::cout << "FPS: " << 1000000/diffCount << std::endl;
 		if (sleepDuration < 0) {
 			sleepDuration = 0;
 		}
 
+		//std::cout << sleepDuration << std::endl;
 		Sleep(sleepDuration);
 	}
 	
