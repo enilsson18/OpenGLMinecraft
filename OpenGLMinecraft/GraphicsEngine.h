@@ -275,7 +275,9 @@ public:
 						else if (count == 4) {
 							//tex coords and also add which texture this is reffering to
 							chunkMap[_y][_x].push_back(cube[x]);
-							chunkMap[_y][_x].push_back(0);
+
+							//test and select texture option
+							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).id);
 						}
 
 						count += 1;

@@ -19,10 +19,17 @@ class Block {
 public:
 	BlockType blockType;
 	glm::vec3 pos;
+	int id;
 
 	Block(BlockType blockInfo, glm::vec3 pos) {
 		this->blockType = blockInfo;
 		this->pos = pos;
+	}
+
+	Block(BlockType blockInfo, int id, glm::vec3 pos) {
+		this->blockType = blockInfo;
+		this->pos = pos;
+		this->id = id;
 	}
 };
 #endif
