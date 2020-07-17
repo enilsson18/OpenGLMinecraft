@@ -56,8 +56,6 @@ int main() {
 	glfwSetWindowFocusCallback(graphicsEngine.window, window_focus_callback);
 	glfwSetMouseButtonCallback(graphicsEngine.window, mouse_button_callback);
 
-	std::cout << "rendering" << std::endl;
-
 	//graphicsEngine.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Grass", "resources/textures/GrassUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
@@ -102,6 +100,7 @@ int main() {
 	*/
 
 	for (int i = 0; i < blocks.size(); i++) {
+		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
 		graphicsEngine.addBlock(&blocks[i]);
 	}
 
@@ -115,6 +114,9 @@ int main() {
 	glfwSetInputMode(graphicsEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	clampMouse = true;
 
+	int fpsCount = 0;
+	int fpsCounter = 0;
+	
 	int gameState = 1;
 	while (gameState == 1) {
 		//start timer
@@ -141,7 +143,17 @@ int main() {
 		}
 
 		int sleepDuration = ((1000000 / fps * 1000) - diffCount)/1000000;
-		std::cout << "FPS: " << 1000000/diffCount << std::endl;
+
+		//output fps
+		fpsCount += 1;
+		fpsCounter += 1000000 / diffCount;
+
+		if (fpsCount % int(fps) == 0) {
+			std::cout << "\rFPS: " << fpsCounter / fpsCount;
+			fpsCount = 0;
+			fpsCounter = 0;
+		}
+
 		if (sleepDuration < 0) {
 			sleepDuration = 0;
 		}
@@ -150,6 +162,10 @@ int main() {
 		Sleep(sleepDuration);
 	}
 	
+	//end fps count segment
+	std::cout << std::endl;
+
+	//closing
 	std::cout << "ending" << std::endl;
 	graphicsEngine.terminate();
 	return 0;

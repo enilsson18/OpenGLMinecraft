@@ -197,6 +197,8 @@ public:
 	}
 
 	void compileVertices() {
+		std::cout << "Compiling vertex data into chunks" << std::endl;
+
 		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
 		float cube[] = {
 			//back
@@ -251,6 +253,16 @@ public:
 		//compile values
 		//float vertices[138240];
 		
+		int totalBlockCount = 0;
+		for (int _y = 0; _y < chunkMap.size(); _y++) {
+			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
+				totalBlockCount += (loadedBlocks[_y][_x].size());
+			}
+		}
+
+		int blockProgress = 0;
+		int progressCounter = 0;
+
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 				int count = 0;
@@ -283,6 +295,14 @@ public:
 						count += 1;
 						count %= 5;
 					}
+
+					//display loading progress
+					blockProgress += 1;
+
+					if (floor((float(blockProgress) / totalBlockCount) * 100) > progressCounter) {
+						progressCounter = floor((float(blockProgress) / totalBlockCount) * 100);
+						std::cout << "\rCompiling and loading verticies: " << progressCounter << "%";
+					}
 				}
 
 				glGenVertexArrays(1, &VAO[_y][_x]);
@@ -307,6 +327,8 @@ public:
 				//std::cout << loadedBlocks[_y][_x].size() << std::endl;
 			}
 		}
+
+		std::cout << std::endl;
 	}
 
 	int renderFrame() {
