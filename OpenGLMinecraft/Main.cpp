@@ -166,15 +166,30 @@ void makeTree(std::vector<Block> *blocks, glm::vec3 pos) {
 		(*blocks).push_back(Block((*gE).blockType[trunk], trunk, glm::vec3(pos.x, pos.y + y, pos.z)));
 	}
 
+	//first and second layer of leaves
 	for (int y = 4; y <= 5; y++) {
 		for (int x = -2; x <= 2; x++) {
 			for (int z = -2; z <= 2; z++) {
 				if (x != 0 || z != 0) {
-					//(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
+					(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
 				}
 			}
 		}
 	}
+
+	//3rd and 4th layer
+	for (int y = 6; y <= 7; y++) {
+		for (int x = -1; x <= 1; x++) {
+			for (int z = -1; z <= 1; z++) {
+				if (((y == 6) || (y == 7 && abs(x) != abs(z))) && (x != 0 || z != 0)) {
+					(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
+				}
+			}
+		}
+	}
+
+	//top the tree off
+	(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x, pos.y + 7, pos.z)));
 }
 
 // process all input: ask GLFW whether relevant keys are pressed/released this frame and react accordingly

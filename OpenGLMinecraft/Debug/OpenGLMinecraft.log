@@ -34,10 +34,10 @@ c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(138): warnin
               _Rep=__int64
           ]
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(143): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(248): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(249): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(253): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(254): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(255): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(256): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(263): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(264): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(268): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(269): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(270): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(271): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   OpenGLMinecraft.vcxproj -> C:\Users\Erik\source\repos\OpenGLMinecraft\Debug\OpenGLMinecraft.exe
