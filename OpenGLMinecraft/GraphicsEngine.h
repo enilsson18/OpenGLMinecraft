@@ -106,8 +106,8 @@ public:
 		glEnable(GL_DEPTH_TEST);
 
 		// build and compile our shader program
-		ourShader = Shader("shaders/6.3.coordinate_systems.vs", "shaders/6.3.coordinate_systems.fs");
-		light.shader = Shader("shaders/light_cube.vs", "shaders/light_cube.fs");
+		ourShader = Shader("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
+		light.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/light_cube.fs");
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
