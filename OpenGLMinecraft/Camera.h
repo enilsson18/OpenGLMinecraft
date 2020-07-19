@@ -58,7 +58,7 @@ public:
 		this->HEIGHT = HEIGHT;
 
 		//set camera type and variables
-		projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, 0.1f, 400.0f);
 
 		//set position and rotation
 		pos = startPos;

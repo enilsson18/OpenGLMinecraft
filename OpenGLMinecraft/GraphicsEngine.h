@@ -57,9 +57,28 @@ public:
 	//texture data
 	std::vector<unsigned int> texture;
 
+	//light that we can move around
+	struct Light {
+		glm::vec3 pos;
+		glm::vec3 color;
+
+		unsigned int VBO;
+		unsigned int VAO;
+
+		Shader shader;
+
+		
+	};
+
+	Light light;
+
 	GraphicsEngine(const char* windowName, Camera *cam, const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
 		//initialize Camera
 		camera = cam;
+
+		//set standard light pos
+		light.pos = glm::vec3(25, 25, 25);
+		light.color = glm::vec3(1, 1, 1);
 
 		// glfw: initialize and configure
 		glfwInit();
@@ -86,8 +105,9 @@ public:
 		// configure global opengl state
 		glEnable(GL_DEPTH_TEST);
 
-		// build and compile our shader zprogram
+		// build and compile our shader program
 		ourShader = Shader("shaders/6.3.coordinate_systems.vs", "shaders/6.3.coordinate_systems.fs");
+		light.shader = Shader("shaders/light_cube.vs", "shaders/light_cube.fs");
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -116,22 +136,12 @@ public:
 	void generateTextures() {
 		texture.clear();
 
+		ourShader.use();
 		for (int i = 0; i < blockType.size(); i++) {
 			texture.push_back(NULL);
 			loadTexture(&texture[i], blockType[i].texture);
 
-		}
-
-		ourShader.use();
-		ourShader.setInt("texture0", 0);
-		if (blockType.size() > 1) {
-			ourShader.setInt("texture1", 1);
-		}
-		if (blockType.size() > 2) {
-			ourShader.setInt("texture2", 2);
-		}
-		if (blockType.size() > 3) {
-			ourShader.setInt("texture3", 3);
+			ourShader.setInt("texture" + std::to_string(i), i);
 		}
 	}
 
@@ -200,59 +210,72 @@ public:
 		std::cout << "Compiling vertex data into chunks" << std::endl;
 
 		// set up vertex data (and buffer(s)) and configure vertex attributes for blocks
+		//it is stored like (posx, pos y, pos z, texcoord x, texcoord y, normal x, normal y, normal z)
 		float cube[] = {
 			//back
-			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f,
-			-0.5f,  0.5f, -0.5f,  0.75f, 0.6666f,
-			-0.5f, -0.5f, -0.5f,  0.75f, 0.3333f,
+			-0.5f, -0.5f, -0.5f, 0.75f, 0.3333f, 0.0f,  0.0f, -1.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.3333f, 0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f, 0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 0.6666f, 0.0f,  0.0f, -1.0f,
+			-0.5f,  0.5f, -0.5f, 0.75f, 0.6666f, 0.0f,  0.0f, -1.0f,
+			-0.5f, -0.5f, -0.5f, 0.75f, 0.3333f, 0.0f,  0.0f, -1.0f,
 
 			//front
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,  0.0f,  0.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,  0.0f,  0.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,  0.0f,  0.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 0.6666f,  0.0f,  0.0f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,  0.0f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,  0.0f,  0.0f, 1.0f,
 
 			//left
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 0.6666f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,  -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f, 0.25f, 0.3333f,  -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f, 0.25f, 0.6666f,  -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f, 0.25f, 0.6666f,  -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 0.6666f,  -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.3333f,  -1.0f,  0.0f,  0.0f,
 
 			//right
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,
-			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.75f, 0.3333f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.75f, 0.6666f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.3333f,  1.0f,  0.0f,  0.0f,
 
 			 //bottom
-			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
-			 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f,
-			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f,
-			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,    0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.50f, 0.0f,    0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f, 0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.50f, 0.3333f, 0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.25f, 0.3333f, 0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.25f, 0.0f,    0.0f, -1.0f,  0.0f,
 
 			//top
-			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,
-			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.50f, 0.6666f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,     0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.50f, 1.0f,     0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f,  0.25f, 1.0f,     0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.25f, 0.6666f,  0.0f,  1.0f,  0.0f
 		};
 
 		//compile values
 		//float vertices[138240];
+
+		//make the light cube
+		glGenVertexArrays(1, &light.VAO);
+		glGenBuffers(1, &light.VBO);
+		glBindVertexArray(light.VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, light.VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
 		
+		//make the blocks
 		int totalBlockCount = 0;
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
@@ -280,11 +303,11 @@ public:
 						else if (count == 2) {
 							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.z + cube[x]);
 						}
-						else if (count == 3) {
+						else if (count >= 3 && count < 7) {
 							//tex coords
 							chunkMap[_y][_x].push_back(cube[x]);
 						}
-						else if (count == 4) {
+						else if (count == 7) {
 							//tex coords and also add which texture this is reffering to
 							chunkMap[_y][_x].push_back(cube[x]);
 
@@ -293,7 +316,7 @@ public:
 						}
 
 						count += 1;
-						count %= 5;
+						count %= 8;
 					}
 
 					//display loading progress
@@ -314,14 +337,17 @@ public:
 				glBufferData(GL_ARRAY_BUFFER, chunkMap[_y][_x].size() * sizeof(float), chunkMap[_y][_x].data(), GL_STATIC_DRAW);
 
 				// position attribute
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
 				glEnableVertexAttribArray(0);
 				// texture coord attribute
-				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
 				glEnableVertexAttribArray(1);
-				// texture label attribute
-				glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float)));
+				//normal vector
+				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
 				glEnableVertexAttribArray(2);
+				// texture label attribute
+				glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(8 * sizeof(float)));
+				glEnableVertexAttribArray(3);
 
 				//std::cout << vertexCount / (6*6*6) << std::endl;
 				//std::cout << loadedBlocks[_y][_x].size() << std::endl;
@@ -343,7 +369,21 @@ public:
 		//clear the screen and start next frame
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//std::cout << "bind" << std::endl;
+
+		//draw light source
+		light.shader.use();
+		light.shader.setMat4("projection", (*camera).projection);
+		light.shader.setMat4("view", (*camera).update());
+		glm::mat4 lightModel(1);
+		lightModel = glm::translate(lightModel, light.pos);
+		lightModel = glm::scale(lightModel, glm::vec3(1)); //change cube size
+		light.shader.setMat4("model", lightModel);
+
+		glBindVertexArray(light.VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		// draw blocks
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 
@@ -366,6 +406,18 @@ public:
 					glActiveTexture(GL_TEXTURE3);
 					glBindTexture(GL_TEXTURE_2D, texture[3]);
 				}
+				if (blockType.size() > 4) {
+					glActiveTexture(GL_TEXTURE4);
+					glBindTexture(GL_TEXTURE_2D, texture[4]);
+				}
+				if (blockType.size() > 5) {
+					glActiveTexture(GL_TEXTURE5);
+					glBindTexture(GL_TEXTURE_2D, texture[5]);
+				}
+				if (blockType.size() > 6) {
+					glActiveTexture(GL_TEXTURE6);
+					glBindTexture(GL_TEXTURE_2D, texture[6]);
+				}
 
 				//std::cout << "shader" << std::endl;
 				//activate shader
@@ -374,6 +426,11 @@ public:
 				//std::cout << "proj view" << std::endl;
 				ourShader.setMat4("projection", (*camera).projection);
 				ourShader.setMat4("view", (*camera).update());
+
+				//lighting
+				ourShader.setVec3("viewPos", (*camera).pos);
+				ourShader.setVec3("lightPos", light.pos);
+				ourShader.setVec3("lightColor", light.color);
 
 				//std::cout << "model" << std::endl;
 				glm::mat4 model = glm::mat4(1.0f);

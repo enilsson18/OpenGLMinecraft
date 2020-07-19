@@ -30,6 +30,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void makeTree(std::vector<Block> *blocks, glm::vec3 pos);
 
+glm::vec3 rotate(glm::vec3 pos, glm::vec2 origin, float increment);
+
 //status variables for UI
 bool clampMouse;
 bool pastClampMouse;
@@ -44,11 +46,16 @@ Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
 
 //world settings
 double treeFrequency = 0.001;
+int mapSize = 100;
+int mapAmplitude = 40;
 
 GraphicsEngine *gE;
 
 int main() {
 	std::cout << "setup" << std::endl;
+
+	//set priorety
+	//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 
 	GraphicsEngine graphicsEngine("OpenGL Minecraft", &camera, SCR_WIDTH, SCR_HEIGHT);
 	gE = &graphicsEngine;
@@ -61,17 +68,18 @@ int main() {
 	graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Trunk", "resources/textures/TrunkUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Leaves", "resources/textures/LeavesUnwrapped.jpg"));
+	//graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
 	//graphicsEngine.addBlockType(BlockType("Ahegao", "resources/textures/ahegao.png"));
 	
 	std::vector<Block> blocks;
 
 	//std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(mapSize, 2, mapAmplitude, 2, 5, 0.1);
 
 	srand(time(0));
-	for (int x = 0; x < 100; x++) {
+	for (int x = 0; x < mapSize; x++) {
 		for (int y = 0; y < 3; y++) {
-			for (int z = 0; z < 100; z++) {
+			for (int z = 0; z < mapSize; z++) {
 				//std::cout << heightMap[x][z] << std::endl;
 				if (y < 2) {
 					blocks.push_back(Block(graphicsEngine.blockType[1], 1, glm::vec3(x, y + int((heightMap[x][z])), z)));
@@ -98,6 +106,9 @@ int main() {
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(-1, -2, 0)));
 	blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, -2, 0)));
 	*/
+
+	//set light pos
+	graphicsEngine.light.pos = glm::vec3(0, mapAmplitude, mapSize);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
@@ -126,7 +137,9 @@ int main() {
 		//input
 		processInput(graphicsEngine.window,&camera);
 
-		//update game info and send data to renderer
+		//update game world info
+		//update light so it moves
+		//graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(50, 50), 1);
 
 
 		//render frame
@@ -206,6 +219,20 @@ void makeTree(std::vector<Block> *blocks, glm::vec3 pos) {
 
 	//top the tree off
 	(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x, pos.y + 7, pos.z)));
+}
+
+//circular movement function rotates parallel with ground and counter clockwise by increment in degrees
+glm::vec3 rotate(glm::vec3 p, glm::vec2 origin, float increment) {
+	glm::vec2 pos = glm::vec2(p.x, p.z) - origin;
+	//get radius and account for the wierd positivity only glitch (it only went around half of the circle)
+	float r = glm::distance(glm::vec2(p.x, p.z), origin) * (abs(pos.x)/pos.x);
+
+	float angle = atan(pos.y / pos.x) * (180 / 3.1415926);
+	angle += increment;
+
+	//std::cout << "\r" << angle;
+
+	return glm::vec3(origin.x + cos(angle / (180 / 3.1415926)) * r, p.y, origin.y + sin(angle / (180 / 3.1415926)) * r);
 }
 
 // process all input: ask GLFW whether relevant keys are pressed/released this frame and react accordingly
