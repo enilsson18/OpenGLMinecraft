@@ -175,12 +175,13 @@ public:
 		glViewport(0, 0, shadow.width, shadow.height);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow.depthMapFBO);
 		//refresh buffer and then render the depthmap to it
-		//glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		//render
 		//glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f, chunkMap.size() * 16.0f, -int(chunkMap.size()) * 16.0f, chunkMap.size()*16.0f, 0.1f, 300.0f);
-		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 300.0f);
+		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 300.0f);
 		//glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size())*16/2), 0.0f, float(int(chunkMap.size()) * 16/2)), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//glm::mat4 lightView = glm::lookAt(glm::vec3(1,1,1), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 lightSpaceMatrix = glm::mat4(1.0f) * lightProjection * lightView;
 
 		//start the main render sequence
@@ -223,11 +224,13 @@ public:
 		texture.clear();
 
 		ourShader.use();
+		ourShader.setInt("shadowMap", 0);
+
 		for (int i = 0; i < blockType.size(); i++) {
 			texture.push_back(NULL);
 			loadTexture(&texture[i], blockType[i].texture);
 
-			ourShader.setInt("texture" + std::to_string(i), i);
+			ourShader.setInt("texture" + std::to_string(i + 1), i + 1);
 		}
 	}
 
@@ -458,7 +461,7 @@ public:
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		calculateShadows();
+		//calculateShadows();
 
 		//draw light source
 		light.shader.use();
@@ -479,8 +482,6 @@ public:
 
 				glBindVertexArray(VBO[_y][_x]);
 				glBindVertexArray(VAO[_y][_x]);
-
-				//shadow.shader.setInt("shadowMap", 1);
 
 				//std::cout << "texture" << std::endl;
 				//set next texture to be rendered

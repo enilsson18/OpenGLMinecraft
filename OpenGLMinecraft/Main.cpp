@@ -68,7 +68,7 @@ int main() {
 	graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Trunk", "resources/textures/TrunkUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Leaves", "resources/textures/LeavesUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
+	//graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
 	//graphicsEngine.addBlockType(BlockType("Ahegao", "resources/textures/ahegao.png"));
 	
 	std::vector<Block> blocks;
