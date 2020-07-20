@@ -3,6 +3,7 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 in vec3 FragPos;
+in vec4 FragPosLightSpace;
 in vec3 Normal;
 flat in int TexNum;
 
@@ -10,7 +11,7 @@ uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
-uniform sampler2D texture0;
+uniform sampler2D shadowMap;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
@@ -18,15 +19,31 @@ uniform sampler2D texture4;
 uniform sampler2D texture5;
 uniform sampler2D texture6;
 
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    //perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    //scale the info to inbetween 0 and 1
+    projCoords = projCoords * 0.5 + 0.5;
+    //get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    //get depth from the lights perspective
+    float currentDepth = projCoords.z;
+    //see if the frag pos is in the shadow
+    float shadow = 1.0;
+	if (currentDepth > closestDepth){
+    	shadow = 1.0;
+	}
+
+    return shadow;
+} 
+
 void main()
 {
 	//load textures sorry I am too lazy to figure out how to make and arrange arrays in glsl
 	vec3 objectColor;
 
-	if (TexNum == 0){
-		objectColor = vec3(texture(texture0, TexCoord));
-	}
-    else if (TexNum == 1){
+    if (TexNum == 1){
 		objectColor = vec3(texture(texture1, TexCoord));
 	}
 	else if (TexNum == 2){
@@ -44,6 +61,7 @@ void main()
 	else if (TexNum == 6){
 		objectColor = vec3(texture(texture6, TexCoord));
 	}
+	//objectColor = vec3(texture(shadowMap, TexCoord));
 
 	float diff = 0;
 
@@ -65,7 +83,14 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor; 
 
-	//combine and output lightings
-	vec3 result = (specular + diffuse + ambient) * objectColor;
+    //shadow
+    float shadow = ShadowCalculation(FragPosLightSpace);
+
+	//combine and output lightings and shadows
+	vec3 result = ((shadow) * (specular + diffuse) + ambient) * objectColor;
 	FragColor = vec4(result, 1.0);
+
+	if (shadow == 0.0f){
+		//FragColor = vec4(1.0);
+	}
 }

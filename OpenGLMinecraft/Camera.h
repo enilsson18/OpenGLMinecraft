@@ -35,6 +35,9 @@ public:
 	float lastY = 900.0f / 2.0;
 	float fov = 45.0f;
 
+	float nearPlane = 0.1f;
+	float farPlane = 400.0f;
+
 	//camera values
 	glm::vec3 pos;
 	glm::vec3 rot;
@@ -58,7 +61,7 @@ public:
 		this->HEIGHT = HEIGHT;
 
 		//set camera type and variables
-		projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, 0.1f, 400.0f);
+		projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, nearPlane, farPlane);
 
 		//set position and rotation
 		pos = startPos;

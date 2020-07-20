@@ -46,8 +46,8 @@ Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
 
 //world settings
 double treeFrequency = 0.001;
-int mapSize = 100;
-int mapAmplitude = 40;
+int mapSize = 200;
+int mapAmplitude = 60;
 
 GraphicsEngine *gE;
 
@@ -57,7 +57,7 @@ int main() {
 	//set priorety
 	//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 
-	GraphicsEngine graphicsEngine("OpenGL Minecraft", &camera, SCR_WIDTH, SCR_HEIGHT);
+	GraphicsEngine graphicsEngine("OpenGL Minecraft", &camera, &SCR_WIDTH, &SCR_HEIGHT);
 	gE = &graphicsEngine;
 	glfwSetCursorPosCallback(graphicsEngine.window, mouse_callback);
 	glfwSetWindowFocusCallback(graphicsEngine.window, window_focus_callback);
@@ -68,7 +68,7 @@ int main() {
 	graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Trunk", "resources/textures/TrunkUnwrapped.jpg"));
 	graphicsEngine.addBlockType(BlockType("Leaves", "resources/textures/LeavesUnwrapped.jpg"));
-	//graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
+	graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
 	//graphicsEngine.addBlockType(BlockType("Ahegao", "resources/textures/ahegao.png"));
 	
 	std::vector<Block> blocks;
@@ -108,7 +108,7 @@ int main() {
 	*/
 
 	//set light pos
-	graphicsEngine.light.pos = glm::vec3(0, mapAmplitude, mapSize);
+	graphicsEngine.light.pos = glm::vec3(50, mapAmplitude, 50);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
@@ -118,6 +118,7 @@ int main() {
 	//generate textures before render
 	graphicsEngine.compileVertices();
 	graphicsEngine.generateTextures();
+	graphicsEngine.calculateShadows();
 
 	//std::cout << graphicsEngine.loadedBlocks[0].size() << std::endl;
 
@@ -162,7 +163,7 @@ int main() {
 		fpsCounter += 1000000 / diffCount;
 
 		if (fpsCount % int(fps) == 0) {
-			std::cout << "\rFPS: " << fpsCounter / fpsCount;
+			//std::cout << "\rFPS: " << fpsCounter / fpsCount;
 			fpsCount = 0;
 			fpsCounter = 0;
 		}

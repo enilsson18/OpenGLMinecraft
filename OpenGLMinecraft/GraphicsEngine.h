@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <shader.h>
 
@@ -36,12 +37,28 @@ public:
 
 	GLFWwindow* window;
 
+	const unsigned int *SCR_WIDTH;
+	const unsigned int *SCR_HEIGHT;
+
 	//shader
 	Shader ourShader;
 
 	//cube vertex data
 	std::vector<std::vector<unsigned int>> VBO;
 	std::vector<std::vector<unsigned int>> VAO;
+
+	//shadows
+	struct Shadow {
+		Shader shader;
+
+		unsigned int depthMapFBO;
+		const unsigned int width = 1024 * 10, height = 1024 * 10;
+		unsigned int depthMap;
+
+		glm::mat4 lightSpaceMatrix;
+	};
+
+	Shadow shadow;
 
 	//camera
 	Camera *camera;
@@ -72,7 +89,7 @@ public:
 
 	Light light;
 
-	GraphicsEngine(const char* windowName, Camera *cam, const unsigned int SCR_WIDTH, const unsigned int SCR_HEIGHT) {
+	GraphicsEngine(const char* windowName, Camera *cam, const unsigned int *scr_WIDTH, const unsigned int *scr_HEIGHT) {
 		//initialize Camera
 		camera = cam;
 
@@ -86,8 +103,11 @@ public:
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+		SCR_WIDTH = scr_WIDTH;
+		SCR_HEIGHT = scr_HEIGHT;
+
 		// glfw window creation
-		window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowName, NULL, NULL);
+		window = glfwCreateWindow(*scr_WIDTH, *scr_HEIGHT, windowName, NULL, NULL);
 		if (window == NULL)
 		{
 			std::cout << "Failed to create GLFW window" << std::endl;
@@ -108,6 +128,7 @@ public:
 		// build and compile our shader program
 		ourShader = Shader("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
 		light.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/light_cube.fs");
+		shadow.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/shadow_depth.fs");
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -123,6 +144,71 @@ public:
 		//addBlock(&Block(blockType[0], glm::vec3(0, 0, 0)));
 
 		//generateTextures();
+
+		setupDepthBuffer();
+	}
+
+	//size is the resolution of the shadow
+	void setupDepthBuffer() {
+		glGenFramebuffers(1, &shadow.depthMapFBO);
+
+		//create an image representing depth buffer
+		glGenTextures(1, &shadow.depthMap);
+		glBindTexture(GL_TEXTURE_2D, shadow.depthMap);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow.width, shadow.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		//bind the buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, shadow.depthMapFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depthMap, 0);
+		//glDrawBuffer(GL_NONE);
+		//glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	//calculate the depthmap
+	void calculateShadows() {
+		//render depthmap
+		glViewport(0, 0, shadow.width, shadow.height);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadow.depthMapFBO);
+		//refresh buffer and then render the depthmap to it
+		//glClear(GL_DEPTH_BUFFER_BIT);
+		//render
+		//glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f, chunkMap.size() * 16.0f, -int(chunkMap.size()) * 16.0f, chunkMap.size()*16.0f, 0.1f, 300.0f);
+		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 300.0f);
+		//glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size())*16/2), 0.0f, float(int(chunkMap.size()) * 16/2)), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightSpaceMatrix = glm::mat4(1.0f) * lightProjection * lightView;
+
+		//start the main render sequence
+		shadow.shader.use();
+		shadow.shader.setMat4("lightSpaceMatrix",lightSpaceMatrix);
+		shadow.lightSpaceMatrix = lightSpaceMatrix;
+		// draw blocks
+		for (int _y = 0; _y < chunkMap.size(); _y++) {
+			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
+
+				glBindVertexArray(VBO[_y][_x]);
+				glBindVertexArray(VAO[_y][_x]);
+
+				//std::cout << "model" << std::endl;
+				glm::mat4 model = glm::mat4(1.0f);
+				shadow.shader.setMat4("model", model);
+
+				//std::cout << "draw" << std::endl;
+				glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[_y][_x].size());
+			}
+		}
+
+		//reset buffers
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, *SCR_WIDTH, *SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//std::cout << shadow.depthMap << std::endl;
 	}
 
 	//add block types and a new column to insert block data
@@ -362,6 +448,8 @@ public:
 			return 0;
 		}
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 		//handle input
 		//processInput(window, &camera);
 
@@ -369,6 +457,8 @@ public:
 		//clear the screen and start next frame
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		calculateShadows();
 
 		//draw light source
 		light.shader.use();
@@ -390,33 +480,35 @@ public:
 				glBindVertexArray(VBO[_y][_x]);
 				glBindVertexArray(VAO[_y][_x]);
 
+				//shadow.shader.setInt("shadowMap", 1);
+
 				//std::cout << "texture" << std::endl;
 				//set next texture to be rendered
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, texture[0]);
-				if (blockType.size() > 1) {
+				glBindTexture(GL_TEXTURE_2D, shadow.depthMap);
+				if (blockType.size() >= 1) {
 					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, texture[0]);
+				}
+				if (blockType.size() >= 2) {
+					glActiveTexture(GL_TEXTURE2);
 					glBindTexture(GL_TEXTURE_2D, texture[1]);
 				}
-				if (blockType.size() > 2) {
-					glActiveTexture(GL_TEXTURE2);
+				if (blockType.size() >= 3) {
+					glActiveTexture(GL_TEXTURE3);
 					glBindTexture(GL_TEXTURE_2D, texture[2]);
 				}
-				if (blockType.size() > 3) {
-					glActiveTexture(GL_TEXTURE3);
+				if (blockType.size() >= 4) {
+					glActiveTexture(GL_TEXTURE4);
 					glBindTexture(GL_TEXTURE_2D, texture[3]);
 				}
-				if (blockType.size() > 4) {
-					glActiveTexture(GL_TEXTURE4);
+				if (blockType.size() >= 5) {
+					glActiveTexture(GL_TEXTURE5);
 					glBindTexture(GL_TEXTURE_2D, texture[4]);
 				}
-				if (blockType.size() > 5) {
-					glActiveTexture(GL_TEXTURE5);
-					glBindTexture(GL_TEXTURE_2D, texture[5]);
-				}
-				if (blockType.size() > 6) {
+				if (blockType.size() >= 6) {
 					glActiveTexture(GL_TEXTURE6);
-					glBindTexture(GL_TEXTURE_2D, texture[6]);
+					glBindTexture(GL_TEXTURE_2D, texture[5]);
 				}
 
 				//std::cout << "shader" << std::endl;
@@ -426,6 +518,9 @@ public:
 				//std::cout << "proj view" << std::endl;
 				ourShader.setMat4("projection", (*camera).projection);
 				ourShader.setMat4("view", (*camera).update());
+
+				//shadows
+				ourShader.setMat4("lightSpaceMatrix", shadow.lightSpaceMatrix);
 
 				//lighting
 				ourShader.setVec3("viewPos", (*camera).pos);
