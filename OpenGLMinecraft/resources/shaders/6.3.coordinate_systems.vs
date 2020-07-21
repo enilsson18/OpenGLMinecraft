@@ -27,7 +27,7 @@ void main()
     //make shadows light space
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 
-    if (FragPosLightSpace == vec4(0.0)){
+    //if (FragPosLightSpace == vec4(0.0)){
     	//TexCoord = vec2(aTexCoord.x, aTexCoord.y);
-    }
+    //}
 }

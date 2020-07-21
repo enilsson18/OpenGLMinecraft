@@ -108,7 +108,8 @@ int main() {
 	*/
 
 	//set light pos
-	graphicsEngine.light.pos = glm::vec3(50, mapAmplitude, 50);
+	//graphicsEngine.light.pos = glm::vec3(mapSize/2, mapAmplitude*1, mapSize/2);
+	graphicsEngine.light.pos = glm::vec3(0, mapAmplitude * 1, 0);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
@@ -163,7 +164,7 @@ int main() {
 		fpsCounter += 1000000 / diffCount;
 
 		if (fpsCount % int(fps) == 0) {
-			//std::cout << "\rFPS: " << fpsCounter / fpsCount;
+			std::cout << "\rFPS: " << fpsCounter / fpsCount;
 			fpsCount = 0;
 			fpsCounter = 0;
 		}

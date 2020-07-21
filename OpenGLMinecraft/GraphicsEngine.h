@@ -52,7 +52,7 @@ public:
 		Shader shader;
 
 		unsigned int depthMapFBO;
-		const unsigned int width = 1024 * 10, height = 1024 * 10;
+		const unsigned int width = 1024 * 16, height = 1024 * 16;
 		unsigned int depthMap;
 
 		glm::mat4 lightSpaceMatrix;
@@ -78,6 +78,7 @@ public:
 	struct Light {
 		glm::vec3 pos;
 		glm::vec3 color;
+		float brightness;
 
 		unsigned int VBO;
 		unsigned int VAO;
@@ -96,6 +97,7 @@ public:
 		//set standard light pos
 		light.pos = glm::vec3(25, 25, 25);
 		light.color = glm::vec3(1, 1, 1);
+		light.brightness = 1.1f;
 
 		// glfw: initialize and configure
 		glfwInit();
@@ -128,7 +130,7 @@ public:
 		// build and compile our shader program
 		ourShader = Shader("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
 		light.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/light_cube.fs");
-		shadow.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/shadow_depth.fs");
+		shadow.shader = Shader("resources/shaders/shadow_depth.vs", "resources/shaders/shadow_depth.fs");
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -158,14 +160,19 @@ public:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow.width, shadow.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 		//bind the buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow.depthMapFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depthMap, 0);
-		//glDrawBuffer(GL_NONE);
-		//glReadBuffer(GL_NONE);
+		glEnable(GL_DEPTH_TEST);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -174,15 +181,20 @@ public:
 		//render depthmap
 		glViewport(0, 0, shadow.width, shadow.height);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow.depthMapFBO);
+
+		//fixes the peter panning effect
+		//glCullFace(GL_FRONT);
+
 		//refresh buffer and then render the depthmap to it
 		glClear(GL_DEPTH_BUFFER_BIT);
 		//render
-		//glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f, chunkMap.size() * 16.0f, -int(chunkMap.size()) * 16.0f, chunkMap.size()*16.0f, 0.1f, 300.0f);
-		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 300.0f);
-		//glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size())*16/2), 0.0f, float(int(chunkMap.size()) * 16/2)), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f * 2, chunkMap.size() * 16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2);
+		//glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 300.0f);
+		//glm::mat4 lightProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, -200.0f, 200.0f);
+		glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size())*16/2), light.pos.y/2, float(int(chunkMap.size()) * 16/2)), glm::vec3(0.0f, 1.0f, 0.0f));
+		//glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		//glm::mat4 lightView = glm::lookAt(glm::vec3(1,1,1), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 lightSpaceMatrix = glm::mat4(1.0f) * lightProjection * lightView;
+		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
 		//start the main render sequence
 		shadow.shader.use();
@@ -192,7 +204,7 @@ public:
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 
-				glBindVertexArray(VBO[_y][_x]);
+				//glBindVertexArray(VBO[_y][_x]);
 				glBindVertexArray(VAO[_y][_x]);
 
 				//std::cout << "model" << std::endl;
@@ -201,8 +213,12 @@ public:
 
 				//std::cout << "draw" << std::endl;
 				glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[_y][_x].size());
+				glBindVertexArray(0);
 			}
 		}
+
+		//reset cull face
+		//glCullFace(GL_BACK);
 
 		//reset buffers
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -458,7 +474,7 @@ public:
 
 		//render
 		//clear the screen and start next frame
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//calculateShadows();
@@ -474,13 +490,14 @@ public:
 
 		glBindVertexArray(light.VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
 
 
 		// draw blocks
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
 
-				glBindVertexArray(VBO[_y][_x]);
+				//glBindVertexArray(VBO[_y][_x]);
 				glBindVertexArray(VAO[_y][_x]);
 
 				//std::cout << "texture" << std::endl;
@@ -517,6 +534,8 @@ public:
 				ourShader.use();
 
 				//std::cout << "proj view" << std::endl;
+				//ourShader.setMat4("projection", glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, -200.0f, 200.0f));
+				//ourShader.setMat4("view", glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 				ourShader.setMat4("projection", (*camera).projection);
 				ourShader.setMat4("view", (*camera).update());
 
@@ -527,6 +546,7 @@ public:
 				ourShader.setVec3("viewPos", (*camera).pos);
 				ourShader.setVec3("lightPos", light.pos);
 				ourShader.setVec3("lightColor", light.color);
+				ourShader.setFloat("lightBrightness", light.brightness);
 
 				//std::cout << "model" << std::endl;
 				glm::mat4 model = glm::mat4(1.0f);
@@ -534,6 +554,7 @@ public:
 
 				//std::cout << "draw" << std::endl;
 				glDrawArrays(GL_TRIANGLES, 0, 36 * loadedBlocks[_y][_x].size());
+				glBindVertexArray(0);
 			}
 		}
 
