@@ -52,8 +52,12 @@ public:
 		Shader shader;
 
 		unsigned int depthMapFBO;
-		const unsigned int width = 1024 * 16, height = 1024 * 16;
+		const unsigned int width = 1024 * 4, height = 1024 * 4;
 		unsigned int depthMap;
+
+		float farPlane = 300;
+		float nearPlane = 0.1f;
+		float fov = 90.0f;
 
 		glm::mat4 lightSpaceMatrix;
 	};
@@ -188,9 +192,8 @@ public:
 		//refresh buffer and then render the depthmap to it
 		glClear(GL_DEPTH_BUFFER_BIT);
 		//render
-		glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f * 2, chunkMap.size() * 16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2);
-		//glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 300.0f);
-		//glm::mat4 lightProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, -200.0f, 200.0f);
+		glm::mat4 lightProjection = glm::perspective(glm::radians(shadow.fov), float(shadow.width)/ float(shadow.height), shadow.nearPlane, shadow.farPlane);
+		//glm::mat4 lightProjection = glm::ortho(-int(chunkMap.size()) * 16.0f * 2, chunkMap.size() * 16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2, -int(chunkMap.size()) * 16.0f * 2, chunkMap.size()*16.0f * 2);
 		glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size())*16/2), light.pos.y/2, float(int(chunkMap.size()) * 16/2)), glm::vec3(0.0f, 1.0f, 0.0f));
 		//glm::mat4 lightView = glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		//glm::mat4 lightView = glm::lookAt(glm::vec3(1,1,1), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -200,6 +203,10 @@ public:
 		shadow.shader.use();
 		shadow.shader.setMat4("lightSpaceMatrix",lightSpaceMatrix);
 		shadow.lightSpaceMatrix = lightSpaceMatrix;
+
+		shadow.shader.setFloat("near_plane", shadow.nearPlane);
+		shadow.shader.setFloat("far_plane", shadow.farPlane);
+
 		// draw blocks
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
@@ -393,35 +400,94 @@ public:
 
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
 			for (int _x = 0; _x < chunkMap[_y].size(); _x++) {
+				//sorting for vertices
+				std::vector<std::vector<int>> sortedSides;
+
+				//initialize
+				for (int i = 0; i < loadedBlocks[_y][_x].size(); i++) {
+					sortedSides.push_back(std::vector<int>());
+					for (int j = 0; j < 6; j++) {
+						sortedSides[i].push_back(1);
+					}
+
+					if (sortedSides.size() > 1) {
+						for (int j = 0; j < sortedSides.size(); j++) {
+							//z axis
+							if ((*loadedBlocks[_y][_x][i]).pos + glm::vec3(0.0f, 0.0f, -1.0f) == (*loadedBlocks[_y][_x][j]).pos) {
+								sortedSides[i][0] = 0;
+								sortedSides[j][1] = 0;
+							}
+							//x axis
+							else if ((*loadedBlocks[_y][_x][i]).pos + glm::vec3(-1.0f, 0.0f, 0.0f) == (*loadedBlocks[_y][_x][j]).pos) {
+								sortedSides[i][2] = 0;
+								sortedSides[j][3] = 0;
+							}
+							//y axis
+							else if ((*loadedBlocks[_y][_x][i]).pos + glm::vec3(0.0f, -1.0f, 0.0f) == (*loadedBlocks[_y][_x][j]).pos) {
+								sortedSides[i][4] = 0;
+								sortedSides[j][5] = 0;
+							}
+						}
+					}
+				}
+
+				/*
+				for (int i = 0; i < loadedBlocks[_y][_x].size(); i++) {
+					for (int j = 0; j < loadedBlocks[_y][_x].size(); j++) {
+						//z axis
+						if ((*loadedBlocks[_y][_x][i]).pos.z - 1 == (*loadedBlocks[_y][_x][j]).pos.z) {
+							sortedSides[i][0] = 0;
+							sortedSides[j][1] = 0;
+						}
+						//x axis
+						else if ((*loadedBlocks[_y][_x][i]).pos.x - 1 == (*loadedBlocks[_y][_x][j]).pos.x) {
+							sortedSides[i][2] = 0;
+							sortedSides[j][3] = 0;
+						}
+						//y axis
+						else if ((*loadedBlocks[_y][_x][i]).pos.y - 1 == (*loadedBlocks[_y][_x][j]).pos.y) {
+							sortedSides[i][4] = 0;
+							sortedSides[j][5] = 0;
+						}
+					}
+				}
+				*/
+
 				int count = 0;
 
 				for (int i = 0; i < loadedBlocks[_y][_x].size(); i++) {
-					count = 0;
-					for (int x = 0; x < sizeof(cube) / sizeof(cube[0]); x++) {
-						//std::cout << vertexCount << " " << x  << " " << count << std::endl;
-						if (count == 0) {
-							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.x + cube[x]);
-						}
-						else if (count == 1) {
-							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.y + cube[x]);
-						}
-						else if (count == 2) {
-							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.z + cube[x]);
-						}
-						else if (count >= 3 && count < 7) {
-							//tex coords
-							chunkMap[_y][_x].push_back(cube[x]);
-						}
-						else if (count == 7) {
-							//tex coords and also add which texture this is reffering to
-							chunkMap[_y][_x].push_back(cube[x]);
+					for (int j = 0; j < 6; j++) {
+						count = 0;
+						//zero means no vertice
+						if (sortedSides[i][j] == 1) {
 
-							//test and select texture option
-							chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).id);
-						}
+							for (int x = j * ((sizeof(cube) / sizeof(cube[0])) / 6); x < (j + 1) * ((sizeof(cube) / sizeof(cube[0])) / 6); x++) {
+								//std::cout << vertexCount << " " << x  << " " << count << std::endl;
+								if (count == 0) {
+									chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.x + cube[x]);
+								}
+								else if (count == 1) {
+									chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.y + cube[x]);
+								}
+								else if (count == 2) {
+									chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).pos.z + cube[x]);
+								}
+								else if (count >= 3 && count < 7) {
+									//tex coords
+									chunkMap[_y][_x].push_back(cube[x]);
+								}
+								else if (count == 7) {
+									//tex coords and also add which texture this is reffering to
+									chunkMap[_y][_x].push_back(cube[x]);
 
-						count += 1;
-						count %= 8;
+									//test and select texture option
+									chunkMap[_y][_x].push_back((*loadedBlocks[_y][_x][i]).id);
+								}
+
+								count += 1;
+								count %= 8;
+							}
+						}
 					}
 
 					//display loading progress
@@ -534,13 +600,16 @@ public:
 				ourShader.use();
 
 				//std::cout << "proj view" << std::endl;
-				//ourShader.setMat4("projection", glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, -200.0f, 200.0f));
-				//ourShader.setMat4("view", glm::lookAt(light.pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+				//ourShader.setMat4("projection", glm::perspective(glm::radians(shadow.fov), float(shadow.width) / float(shadow.height), shadow.nearPlane, shadow.farPlane));
+				//ourShader.setMat4("view", glm::lookAt(light.pos, glm::vec3(float(int(chunkMap.size()) * 16 / 2), light.pos.y / 2, float(int(chunkMap.size()) * 16 / 2)), glm::vec3(0.0f, 1.0f, 0.0f)));
 				ourShader.setMat4("projection", (*camera).projection);
 				ourShader.setMat4("view", (*camera).update());
 
 				//shadows
 				ourShader.setMat4("lightSpaceMatrix", shadow.lightSpaceMatrix);
+				ourShader.setFloat("near_plane", (*camera).nearPlane);
+				ourShader.setFloat("far_plane", (*camera).farPlane);
+				
 
 				//lighting
 				ourShader.setVec3("viewPos", (*camera).pos);

@@ -109,7 +109,7 @@ int main() {
 
 	//set light pos
 	//graphicsEngine.light.pos = glm::vec3(mapSize/2, mapAmplitude*1, mapSize/2);
-	graphicsEngine.light.pos = glm::vec3(0, mapAmplitude * 1, 0);
+	graphicsEngine.light.pos = glm::vec3(-10, mapAmplitude * 1, -10);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
