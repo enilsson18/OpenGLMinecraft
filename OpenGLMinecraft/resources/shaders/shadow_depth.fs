@@ -4,6 +4,7 @@ layout(location = 0) out float fragmentdepth;
 
 uniform float near_plane;
 uniform float far_plane;
+uniform int projType;
 
 float LinearizeDepth(float depth)
 {
@@ -12,7 +13,11 @@ float LinearizeDepth(float depth)
 }
 
 void main()
-{             
-    fragmentdepth = LinearizeDepth(gl_FragCoord.z) / far_plane;
-    //fragmentdepth = gl_FragCoord.z;
+{   
+	if (projType == 1){
+    	fragmentdepth = LinearizeDepth(gl_FragCoord.z) / far_plane;
+    }
+    if (projType == 0){
+    	fragmentdepth = gl_FragCoord.z;
+    }
 }  

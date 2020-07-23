@@ -12,6 +12,8 @@ uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform float lightBrightness;
 
+uniform int projType;
+
 uniform float near_plane;
 uniform float far_plane;
 
@@ -35,7 +37,14 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     float currentDepth = projCoords.z;
     //see if the frag pos is in the shadow
     //bias fixes the peter panning effect
-    float bias = max(0.05 * (1.0 - dot(normalize(Normal), normalize(lightPos - FragPos))), 0.005);  
+
+    float bias = 0;
+    if (projType == 0){
+    	bias = max(0.0002 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.0002);
+    }
+    if (projType == 1){
+    	bias = max(0.00001 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000001);
+    }
     float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;
 
     
@@ -51,11 +60,11 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     	}    
 	}
 	shadow /= 9.0;
+	*/
 
-	//if(projCoords.z > 1.0)
-        //shadow = 0.0;
+	if(projCoords.z > 1.0)
+        shadow = 0.0;
 
-    */
     
 
     return shadow;
@@ -84,7 +93,7 @@ void main()
 	else if (TexNum == 6){
 		objectColor = vec3(texture(texture6, TexCoord));
 	}
-	objectColor = vec3(255 - 255 * texture(shadowMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r);
+	//objectColor = vec3(255 - 255 * texture(shadowMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r);
 	//objectColor = vec3(255 - 255 * (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).z);
 
 	float diff = 0;
@@ -111,7 +120,7 @@ void main()
     float shadow = ShadowCalculation(FragPosLightSpace);
 
 	//combine and output lightings and shadows
-	vec3 result = ((1 - shadow) * (specular + diffuse) + ambient) * objectColor;
+	vec3 result = ((1 - shadow) * (specular + diffuse) * 1 + ambient) * objectColor;
 	FragColor = vec4(result, 1.0);
 
 	if (shadow == 0.0f){

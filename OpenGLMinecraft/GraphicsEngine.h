@@ -52,14 +52,18 @@ public:
 		Shader shader;
 
 		unsigned int depthMapFBO;
-		const unsigned int width = 1024 * 4, height = 1024 * 4;
+		const unsigned int width = 1024 * 16, height = 1024 * 16;
 		unsigned int depthMap;
 
-		float farPlane = 300;
+		float farPlane = 1000;
 		float nearPlane = 0.1f;
 		float fov = 90.0f;
 
 		glm::mat4 lightSpaceMatrix;
+
+		//0 is ortho
+		//1 is perspective
+		int projectionType = 1;
 	};
 
 	Shadow shadow;
@@ -199,6 +203,8 @@ public:
 		//glm::mat4 lightView = glm::lookAt(glm::vec3(1,1,1), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
+		shadow.projectionType = 1;
+
 		//start the main render sequence
 		shadow.shader.use();
 		shadow.shader.setMat4("lightSpaceMatrix",lightSpaceMatrix);
@@ -206,6 +212,7 @@ public:
 
 		shadow.shader.setFloat("near_plane", shadow.nearPlane);
 		shadow.shader.setFloat("far_plane", shadow.farPlane);
+		shadow.shader.setInt("projType", shadow.projectionType);
 
 		// draw blocks
 		for (int _y = 0; _y < chunkMap.size(); _y++) {
@@ -609,6 +616,7 @@ public:
 				ourShader.setMat4("lightSpaceMatrix", shadow.lightSpaceMatrix);
 				ourShader.setFloat("near_plane", (*camera).nearPlane);
 				ourShader.setFloat("far_plane", (*camera).farPlane);
+				ourShader.setInt("projType", shadow.projectionType);
 				
 
 				//lighting

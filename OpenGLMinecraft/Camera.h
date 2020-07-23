@@ -36,7 +36,7 @@ public:
 	float fov = 45.0f;
 
 	float nearPlane = 0.1f;
-	float farPlane = 400.0f;
+	float farPlane = 1000.0f;
 
 	//camera values
 	glm::vec3 pos;

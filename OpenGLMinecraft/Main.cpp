@@ -46,7 +46,7 @@ Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
 
 //world settings
 double treeFrequency = 0.001;
-int mapSize = 200;
+int mapSize = 400;
 int mapAmplitude = 60;
 
 GraphicsEngine *gE;
@@ -74,7 +74,7 @@ int main() {
 	std::vector<Block> blocks;
 
 	//std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(mapSize, 2, mapAmplitude, 2, 5, 0.1);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(mapSize, 4, mapAmplitude, 2, 5, 0.1);
 
 	srand(time(0));
 	for (int x = 0; x < mapSize; x++) {
@@ -94,6 +94,7 @@ int main() {
 		}
 	}
 	
+	//makeTree(&blocks, glm::vec3(5, 2 + int((heightMap[5][5])), 5));
 
 	
 	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
@@ -113,7 +114,7 @@ int main() {
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
-		graphicsEngine.addBlock(&blocks[i]);
+			graphicsEngine.addBlock(&blocks[i]);
 	}
 
 	//generate textures before render
