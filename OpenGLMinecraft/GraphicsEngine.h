@@ -68,6 +68,26 @@ public:
 
 	Shadow shadow;
 
+	//skybox
+	struct SkyBox {
+		Shader shader;
+
+		//order
+		//right
+		//left
+		//top
+		//bottom
+		//front
+		//back
+		std::vector<const char*> textureFaces;
+
+		unsigned int textureID, VBO, VAO;
+
+		int width, height, nrChannels;
+	};
+
+	SkyBox skyBox;
+
 	//camera
 	Camera *camera;
 
@@ -134,11 +154,13 @@ public:
 
 		// configure global opengl state
 		glEnable(GL_DEPTH_TEST);
+		stbi_set_flip_vertically_on_load(true);
 
 		// build and compile our shader program
 		ourShader = Shader("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
 		light.shader = Shader("resources/shaders/light_cube.vs", "resources/shaders/light_cube.fs");
 		shadow.shader = Shader("resources/shaders/shadow_depth.vs", "resources/shaders/shadow_depth.fs");
+		skyBox.shader = Shader("resources/shaders/sky_box.vs", "resources/shaders/sky_box.fs");
 
 		//test crate
 		//addBlockType(BlockType("Crate", "resources/textures/container.jpg"));
@@ -155,7 +177,109 @@ public:
 
 		//generateTextures();
 
+		std::vector<const char*> skyBoxFaces 
+		{
+			"resources/textures/CloudySkyBox/cubemap_1.jpg",
+			"resources/textures/CloudySkyBox/cubemap_3.jpg",
+			"resources/textures/CloudySkyBox/cubemap_4.jpg",
+			"resources/textures/CloudySkyBox/cubemap_5.jpg",
+			"resources/textures/CloudySkyBox/cubemap_0.jpg",
+			"resources/textures/CloudySkyBox/cubemap_2.jpg",
+		};
+
+		loadSkyBox(skyBoxFaces);
+
 		setupDepthBuffer();
+	}
+
+	//load Skybox
+	void loadSkyBox(std::vector<const char*> texFaces) {
+		//gen and bind cubemap
+		glGenTextures(1, &skyBox.textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox.textureID);
+
+		//set skybox vars
+		skyBox.textureFaces = texFaces;
+
+		//load individual faces
+		for (unsigned int i = 0; i < texFaces.size(); i++)
+		{
+			unsigned char *data = stbi_load(texFaces[i], &skyBox.width, &skyBox.height, &skyBox.nrChannels, 0);
+			if (data)
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, skyBox.width, skyBox.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap tex failed to load at path: " << texFaces[i] << std::endl;
+				stbi_image_free(data);
+			}
+		}
+		//clamp the edges and apply parameters
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		//gen VBO and VAO
+
+		float skyboxVertices[] = {
+			// positions          
+			-1.0f,  1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+
+			-1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f,
+
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+
+			-1.0f, -1.0f,  1.0f,
+			-1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f,
+
+			-1.0f,  1.0f, -1.0f,
+			 1.0f,  1.0f, -1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			-1.0f,  1.0f,  1.0f,
+			-1.0f,  1.0f, -1.0f,
+
+			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,
+			 1.0f, -1.0f,  1.0f
+		};
+
+		glGenVertexArrays(1, &skyBox.VAO);
+		glGenBuffers(1, &skyBox.VBO);
+		glBindVertexArray(skyBox.VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, skyBox.VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
 	}
 
 	//size is the resolution of the shadow
@@ -182,6 +306,10 @@ public:
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//setup shader
+		skyBox.shader.use();
+		skyBox.shader.setInt("skybox", 0);
 	}
 
 	//calculate the depthmap
@@ -551,6 +679,18 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//calculateShadows();
+
+		//draw skybox
+		glDepthMask(GL_FALSE);
+		skyBox.shader.use();
+
+		skyBox.shader.setMat4("projection", (*camera).projection);
+		skyBox.shader.setMat4("view", glm::mat4(glm::mat3((*camera).update())));
+
+		glBindVertexArray(skyBox.VAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox.textureID);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);
 
 		//draw light source
 		light.shader.use();

@@ -46,8 +46,8 @@ Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
 
 //world settings
 double treeFrequency = 0.001;
-int mapSize = 400;
-int mapAmplitude = 60;
+int mapSize = 200;
+int mapAmplitude = 80;
 
 GraphicsEngine *gE;
 
@@ -74,7 +74,7 @@ int main() {
 	std::vector<Block> blocks;
 
 	//std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
-	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(mapSize, 4, mapAmplitude, 2, 5, 0.1);
+	std::vector<std::vector<float>> heightMap = PerlinNoise::generate(mapSize, 2, mapAmplitude, 2, 5, 0.1);
 
 	srand(time(0));
 	for (int x = 0; x < mapSize; x++) {
@@ -110,7 +110,7 @@ int main() {
 
 	//set light pos
 	//graphicsEngine.light.pos = glm::vec3(mapSize/2, mapAmplitude*1, mapSize/2);
-	graphicsEngine.light.pos = glm::vec3(-10, mapAmplitude * 1, -10);
+	graphicsEngine.light.pos = glm::vec3(-10, mapAmplitude, -10);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)

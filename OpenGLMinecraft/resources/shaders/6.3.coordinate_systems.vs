@@ -18,7 +18,7 @@ uniform mat4 lightSpaceMatrix;
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0f);
-    TexCoord = vec2(aTexCoord.x, 1.0 - aTexCoord.y);
+    TexCoord = vec2(aTexCoord.x, aTexCoord.y);
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = transpose(inverse(mat3(model))) * aNormal;
     //add one since we need to make room for the shadow map.
