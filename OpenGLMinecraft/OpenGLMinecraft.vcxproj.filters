@@ -43,5 +43,17 @@
     <ClInclude Include="PerlinNoise.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MinecraftManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

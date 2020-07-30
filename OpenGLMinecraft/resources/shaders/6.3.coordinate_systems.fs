@@ -40,10 +40,10 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
     float bias = 0;
     if (projType == 0){
-    	bias = max(0.0002 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.0002);
+    	bias = max(0.000002 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000002);
     }
     if (projType == 1){
-    	bias = max(0.00001 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000001);
+    	bias = max(0.00000001 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000000001);
     }
     float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;
 
@@ -95,6 +95,7 @@ void main()
 	}
 	//objectColor = vec3(255 - 255 * texture(shadowMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r);
 	//objectColor = vec3(255 - 255 * (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).z);
+	//objectColor = vec3(texture(shadowMap, TexCoord));
 
 	float diff = 0;
 
@@ -120,7 +121,7 @@ void main()
     float shadow = ShadowCalculation(FragPosLightSpace);
 
 	//combine and output lightings and shadows
-	vec3 result = ((1 - shadow) * (specular + diffuse) * 1 + ambient) * objectColor;
+	vec3 result = ((1 - shadow) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
 	FragColor = vec4(result, 1.0);
 
 	if (shadow == 0.0f){

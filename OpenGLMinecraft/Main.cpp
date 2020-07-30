@@ -63,14 +63,14 @@ int main() {
 	glfwSetWindowFocusCallback(graphicsEngine.window, window_focus_callback);
 	glfwSetMouseButtonCallback(graphicsEngine.window, mouse_button_callback);
 
-	//graphicsEngine.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Grass", "resources/textures/GrassUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Trunk", "resources/textures/TrunkUnwrapped.jpg"));
-	graphicsEngine.addBlockType(BlockType("Leaves", "resources/textures/LeavesUnwrapped.jpg"));
-	//graphicsEngine.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
-	//graphicsEngine.addBlockType(BlockType("Ahegao", "resources/textures/ahegao.png"));
-	
+	//graphicsEngine.minecraft.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
+	graphicsEngine.minecraft.addBlockType(BlockType("Grass", "resources/textures/GrassUnwrapped.jpg"));
+	graphicsEngine.minecraft.addBlockType(BlockType("Dirt", "resources/textures/DirtUnwrapped.jpg"));
+	graphicsEngine.minecraft.addBlockType(BlockType("Trunk", "resources/textures/TrunkUnwrapped.jpg"));
+	graphicsEngine.minecraft.addBlockType(BlockType("Leaves", "resources/textures/LeavesUnwrapped.jpg"));
+	//graphicsEngine.minecraft.addBlockType(BlockType("Light", "resources/textures/white.jpg"));
+	//graphicsEngine.minecraft.addBlockType(BlockType("Ahegao", "resources/textures/ahegao.png"));
+
 	std::vector<Block> blocks;
 
 	//std::vector<std::vector<float>> heightMap = PerlinNoise::generate(100, 2, 40, 2, 5, 0.1);
@@ -82,10 +82,10 @@ int main() {
 			for (int z = 0; z < mapSize; z++) {
 				//std::cout << heightMap[x][z] << std::endl;
 				if (y < 2) {
-					blocks.push_back(Block(graphicsEngine.blockType[1], 1, glm::vec3(x, y + int((heightMap[x][z])), z)));
+					blocks.push_back(Block(graphicsEngine.minecraft.blockType[1], 1, glm::vec3(x, y + int((heightMap[x][z])), z)));
 				}
 				else if (y > 0) {
-					blocks.push_back(Block(graphicsEngine.blockType[0], 0, glm::vec3(x, y + int((heightMap[x][z])), z)));
+					blocks.push_back(Block(graphicsEngine.minecraft.blockType[0], 0, glm::vec3(x, y + int((heightMap[x][z])), z)));
 					if ((double)rand() / (RAND_MAX) <= treeFrequency) {
 						makeTree(&blocks, glm::vec3(x, y + int((heightMap[x][z])), z));
 					}
@@ -93,10 +93,10 @@ int main() {
 			}
 		}
 	}
-	
+
 	//makeTree(&blocks, glm::vec3(5, 2 + int((heightMap[5][5])), 5));
 
-	
+
 	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(0, 0, 0)));
 	//blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 1, 1)));
 	/*blocks.push_back(Block(graphicsEngine.blockType[0], glm::vec3(1, 0, 0)));
@@ -114,13 +114,13 @@ int main() {
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
-			graphicsEngine.addBlock(&blocks[i]);
+			graphicsEngine.minecraft.addBlock(&blocks[i]);
 	}
 
 	//generate textures before render
-	graphicsEngine.compileVertices();
-	graphicsEngine.generateTextures();
-	graphicsEngine.calculateShadows();
+	graphicsEngine.minecraft.compileVertices();
+	graphicsEngine.minecraft.generateTextures();
+	//graphicsEngine.shadow.calculateShadows();
 
 	//std::cout << graphicsEngine.loadedBlocks[0].size() << std::endl;
 
@@ -130,7 +130,7 @@ int main() {
 
 	int fpsCount = 0;
 	int fpsCounter = 0;
-	
+
 	int gameState = 1;
 	while (gameState == 1) {
 		//start timer
@@ -138,7 +138,7 @@ int main() {
 
 
 		//input
-		processInput(graphicsEngine.window,&camera);
+		processInput(graphicsEngine.window, &camera);
 
 		//update game world info
 		//update light so it moves
@@ -147,6 +147,9 @@ int main() {
 
 		//render frame
 		gameState = graphicsEngine.renderFrame();
+		//graphicsEngine.shadow.calculateShadows();
+		//glfwSwapBuffers(graphicsEngine.window);
+		//glfwPollEvents();
 
 
 		//end of timer sleep and normalize the clock
@@ -158,7 +161,7 @@ int main() {
 			diffCount = 1;
 		}
 
-		int sleepDuration = ((1000000 / fps * 1000) - diffCount)/1000000;
+		int sleepDuration = ((1000000 / fps * 1000) - diffCount) / 1000000;
 
 		//output fps
 		fpsCount += 1;
@@ -177,7 +180,7 @@ int main() {
 		//std::cout << sleepDuration << std::endl;
 		Sleep(sleepDuration);
 	}
-	
+
 	//end fps count segment
 	std::cout << std::endl;
 
@@ -195,7 +198,7 @@ void makeTree(std::vector<Block> *blocks, glm::vec3 pos) {
 
 	for (int y = 1; y <= 6; y++) {
 		//trunk
-		(*blocks).push_back(Block((*gE).blockType[trunk], trunk, glm::vec3(pos.x, pos.y + y, pos.z)));
+		(*blocks).push_back(Block((*gE).minecraft.blockType[trunk], trunk, glm::vec3(pos.x, pos.y + y, pos.z)));
 	}
 
 	//first and second layer of leaves
@@ -203,7 +206,7 @@ void makeTree(std::vector<Block> *blocks, glm::vec3 pos) {
 		for (int x = -2; x <= 2; x++) {
 			for (int z = -2; z <= 2; z++) {
 				if (x != 0 || z != 0) {
-					(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
+					(*blocks).push_back(Block((*gE).minecraft.blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
 				}
 			}
 		}
@@ -214,21 +217,21 @@ void makeTree(std::vector<Block> *blocks, glm::vec3 pos) {
 		for (int x = -1; x <= 1; x++) {
 			for (int z = -1; z <= 1; z++) {
 				if (((y == 6) || (y == 7 && abs(x) != abs(z))) && (x != 0 || z != 0)) {
-					(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
+					(*blocks).push_back(Block((*gE).minecraft.blockType[leaves], leaves, glm::vec3(pos.x + x, pos.y + y, pos.z + z)));
 				}
 			}
 		}
 	}
 
 	//top the tree off
-	(*blocks).push_back(Block((*gE).blockType[leaves], leaves, glm::vec3(pos.x, pos.y + 7, pos.z)));
+	(*blocks).push_back(Block((*gE).minecraft.blockType[leaves], leaves, glm::vec3(pos.x, pos.y + 7, pos.z)));
 }
 
 //circular movement function rotates parallel with ground and counter clockwise by increment in degrees
 glm::vec3 rotate(glm::vec3 p, glm::vec2 origin, float increment) {
 	glm::vec2 pos = glm::vec2(p.x, p.z) - origin;
 	//get radius and account for the wierd positivity only glitch (it only went around half of the circle)
-	float r = glm::distance(glm::vec2(p.x, p.z), origin) * (abs(pos.x)/pos.x);
+	float r = glm::distance(glm::vec2(p.x, p.z), origin) * (abs(pos.x) / pos.x);
 
 	float angle = atan(pos.y / pos.x) * (180 / 3.1415926);
 	angle += increment;
@@ -246,7 +249,7 @@ void processInput(GLFWwindow *window, Camera *camera)
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			clampMouse = false;
 		}
-		else if (pastClampMouse == false){
+		else if (pastClampMouse == false) {
 			glfwSetWindowShouldClose(window, true);
 		}
 	}
@@ -288,7 +291,7 @@ void processInput(GLFWwindow *window, Camera *camera)
 void window_focus_callback(GLFWwindow* window, int focused) {
 	if (focused)
 		clampMouse = true;
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -297,7 +300,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		clampMouse = true;
 	}
-		
+
 }
 
 //mouse callback
