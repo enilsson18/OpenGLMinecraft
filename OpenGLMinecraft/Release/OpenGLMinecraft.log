@@ -19,8 +19,8 @@ c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(29
               _Ty=float
           ]
 c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(310): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(408): warning C4018: '<': signed/unsigned mismatch
 c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(409): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(410): warning C4018: '<': signed/unsigned mismatch
 c:\users\erik\source\repos\openglminecraft\openglminecraft\perlinnoise.h(42): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\perlinnoise.h(46): warning C4018: '<=': signed/unsigned mismatch
 c:\users\erik\source\repos\openglminecraft\openglminecraft\perlinnoise.h(48): warning C4018: '<=': signed/unsigned mismatch

@@ -32,8 +32,10 @@ public:
 
 	glm::vec3 pos;
 	glm::vec3 color;
+	//1 is normal
 	float brightness;
-	float lightDistance;
+	//the effective distance of the light source
+	float distance;
 
 	unsigned int VBO;
 	unsigned int VAO;
@@ -49,7 +51,7 @@ public:
 		this->color = color;
 
 		brightness = 1;
-		lightDistance = 100;
+		distance = 200;
 	}
 
 	//include shader files

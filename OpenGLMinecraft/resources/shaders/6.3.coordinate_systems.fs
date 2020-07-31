@@ -11,6 +11,7 @@ uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform float lightBrightness;
+uniform float lightDistance;
 
 uniform int projType;
 
@@ -120,8 +121,13 @@ void main()
     //shadow
     float shadow = ShadowCalculation(FragPosLightSpace);
 
+    //disperse light over a distance and this is the factor of it
+    float distance = distance(FragPos, lightPos);
+    distance *= lightBrightness * (1/lightDistance);
+    distance = 1 - distance;
+
 	//combine and output lightings and shadows
-	vec3 result = ((1 - shadow) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
+	vec3 result = ((1 - shadow + distance) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
 	FragColor = vec4(result, 1.0);
 
 	if (shadow == 0.0f){

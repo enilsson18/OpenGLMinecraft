@@ -364,6 +364,7 @@ public:
 		shader.setVec3("lightPos", light.pos);
 		shader.setVec3("lightColor", light.color);
 		shader.setFloat("lightBrightness", light.brightness);
+		shader.setFloat("lightDistance", light.distance);
 
 		//std::cout << "texture" << std::endl;
 				//set next texture to be rendered
