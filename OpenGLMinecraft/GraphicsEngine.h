@@ -162,16 +162,15 @@ public:
 		light.render((*camera).projection, (*camera).update());
 
 		//draw world
-		minecraft.renderWorld((*camera).projection, (*camera).update(), *camera, light, shadow.projectionType, shadow.depthMap, shadow.lightSpaceMatrix);
+		minecraft.renderWorld((*camera).projection, (*camera).update(), *camera, light, shadow.projectionType, shadow.depthMap, shadow.shadowMap, shadow.lightSpaceMatrix);
 
 		//debug quad
-		debug.use();
+		//debug.use();
 
 		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, shadow.depthColorMap);
+		//glBindTexture(GL_TEXTURE_2D, shadow.shadowMap);
 
 		//quad.render();
-
 
 		//swap the buffers for smooth frames and poll events
 		//std::cout << "events" << std::endl;

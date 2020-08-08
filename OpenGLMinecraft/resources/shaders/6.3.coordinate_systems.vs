@@ -22,7 +22,7 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = transpose(inverse(mat3(model))) * aNormal;
     //add one since we need to make room for the shadow map.
-    TexNum = int(texNum) + 1;
+    TexNum = int(texNum);
 
     //make shadows light space
     FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);

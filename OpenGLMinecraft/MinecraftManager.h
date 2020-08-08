@@ -72,12 +72,13 @@ public:
 
 		shader.use();
 		shader.setInt("shadowMap", 0);
+		shader.setInt("shadowBlurMap", 1);
 
 		for (int i = 0; i < blockType.size(); i++) {
 			texture.push_back(NULL);
 			loadTexture(&texture[i], blockType[i].texture);
 
-			shader.setInt("texture" + std::to_string(i + 1), i + 1);
+			shader.setInt("texture" + std::to_string(i + 1), i + 2);
 		}
 	}
 
@@ -341,7 +342,7 @@ public:
 		std::cout << std::endl;
 	}
 
-	void renderWorld(glm::mat4 proj, glm::mat4 view, Camera camera, Light light, int projectionType, unsigned int depthMap, glm::mat4 lightSpaceMatrix) {
+	void renderWorld(glm::mat4 proj, glm::mat4 view, Camera camera, Light light, int projectionType, unsigned int depthMap, unsigned int colorMap, glm::mat4 lightSpaceMatrix) {
 		//std::cout << "shader" << std::endl;
 				//activate shader
 		shader.use();
@@ -357,7 +358,7 @@ public:
 		shader.setFloat("near_plane", camera.nearPlane);
 		shader.setFloat("far_plane", camera.farPlane);
 		shader.setInt("projType", projectionType);
-
+		shader.setInt("pcflevel", 1);
 
 		//lighting
 		shader.setVec3("viewPos", camera.pos);
@@ -371,28 +372,30 @@ public:
 				//std::cout << depthMap << std::endl;
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, colorMap);
 		if (blockType.size() >= 1) {
-			glActiveTexture(GL_TEXTURE1);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, texture[0]);
 		}
 		if (blockType.size() >= 2) {
-			glActiveTexture(GL_TEXTURE2);
+			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, texture[1]);
 		}
 		if (blockType.size() >= 3) {
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE4);
 			glBindTexture(GL_TEXTURE_2D, texture[2]);
 		}
 		if (blockType.size() >= 4) {
-			glActiveTexture(GL_TEXTURE4);
+			glActiveTexture(GL_TEXTURE5);
 			glBindTexture(GL_TEXTURE_2D, texture[3]);
 		}
 		if (blockType.size() >= 5) {
-			glActiveTexture(GL_TEXTURE5);
+			glActiveTexture(GL_TEXTURE6);
 			glBindTexture(GL_TEXTURE_2D, texture[4]);
 		}
 		if (blockType.size() >= 6) {
-			glActiveTexture(GL_TEXTURE6);
+			glActiveTexture(GL_TEXTURE7);
 			glBindTexture(GL_TEXTURE_2D, texture[5]);
 		}
 
