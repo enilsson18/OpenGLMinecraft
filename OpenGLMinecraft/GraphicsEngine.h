@@ -23,6 +23,7 @@
 #include "Light.h"
 #include "Skybox.h"
 #include "Shadow.h"
+#include "Quad.h"
 
 #include <vector>
 
@@ -58,6 +59,10 @@ public:
 
 	Light light;
 
+	//debug quad
+	Shader debug;
+	Quad quad;
+
 	GraphicsEngine(const char* windowName, Camera *cam, const unsigned int *scr_WIDTH, const unsigned int *scr_HEIGHT) {
 		//minecraft
 		minecraft = MinecraftManager();
@@ -67,6 +72,9 @@ public:
 
 		//light
 		light = Light(glm::vec3(25, 25, 25), glm::vec3(1, 1, 1));
+
+		//debug quad
+		quad = Quad();
 
 		////shadows
 		//shadow = Shadow(1);
@@ -121,7 +129,12 @@ public:
 		skyBox.setup("resources/shaders/sky_box.vs", "resources/shaders/sky_box.fs", skyBoxFaces);
 
 		//shadows
-		shadow.setup("resources/shaders/shadow_depth.vs", "resources/shaders/shadow_depth.fs", &minecraft, &light);
+		shadow.setup("resources/shaders/shadow_depth.vs", "resources/shaders/shadow_depth.fs", &minecraft, camera, &light);
+
+		//debug
+		debug = Shader("resources/shaders/debug_quad.vs", "resources/shaders/debug_quad.fs");
+		debug.use();
+		debug.setInt("tex", 0);
 	}
 
 	int renderFrame() {
@@ -150,6 +163,15 @@ public:
 
 		//draw world
 		minecraft.renderWorld((*camera).projection, (*camera).update(), *camera, light, shadow.projectionType, shadow.depthMap, shadow.lightSpaceMatrix);
+
+		//debug quad
+		debug.use();
+
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, shadow.depthColorMap);
+
+		//quad.render();
+
 
 		//swap the buffers for smooth frames and poll events
 		//std::cout << "events" << std::endl;

@@ -31,14 +31,26 @@
 class Shadow {
 public:
 	Shader shader;
+	Shader colorShader;
+	Shader blurShader;
 
 	MinecraftManager *minecraft;
 
 	Light *light;
+	Camera *camera;
+
+	const unsigned int width = 1024 * 16, height = 1024 * 16;
 
 	unsigned int depthMapFBO;
-	const unsigned int width = 1024 * 16, height = 1024 * 16;
 	unsigned int depthMap;
+
+	//color version black and white of depthMap
+	unsigned int depthColorMapFBO;
+	unsigned int depthColorMap;
+
+	//difference is that depth map is the depth map pure and simple but the shadow map uses gaussian blurring
+	unsigned int shadowMapFBO;
+	unsigned int shadowMap;
 
 	float farPlane = 1000;
 	float nearPlane = 0.1f;
@@ -58,21 +70,30 @@ public:
 		projectionType = type;
 	}
 
-	void setup(const char* vs, const char* fs, MinecraftManager *minecraft, Light *light) {
+	void setup(const char* vs, const char* fs, MinecraftManager *minecraft, Camera *camera, Light *light) {
 		shader = Shader(vs, fs);
+
+		blurShader = Shader("resources/shaders/gausian_blur.vs", "resources/shaders/gausian_blur.fs");
+
+		colorShader = Shader("resources/shaders/shadow_color.vs", "resources/shaders/shadow_color.fs");
+
 		this->minecraft = minecraft;
+		this->camera = camera;
 		this->light = light;
 
+		setupDepthColorBuffer();
 		setupDepthBuffer();
+		setupBlurBuffer();
 	}
 
 	//size is the resolution of the shadow
 	void setupDepthBuffer() {
 		glGenFramebuffers(1, &depthMapFBO);
 
-		//create an image representing depth buffer
+		//create an image representing base depth buffer
 		glGenTextures(1, &depthMap);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
+
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -87,13 +108,70 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
 		glEnable(GL_DEPTH_TEST);
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
+		//glDrawBuffer(GL_NONE);
+		//glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void setupDepthColorBuffer() {
+		//make the shadow buffer and bind it to quad fbo
+		glGenFramebuffers(1, &depthColorMapFBO);
+
+		//create an image representing base depth buffer
+		glGenTextures(1, &depthColorMap);
+		glBindTexture(GL_TEXTURE_2D, depthColorMap);
+			
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//bind the buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, depthColorMapFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, depthColorMap, 0);
+		glEnable(GL_DEPTH_TEST);
+		//glDrawBuffer(GL_NONE);
+		//glReadBuffer(GL_NONE);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		//setup shader
-		//shader.use();
-		//shader.setInt("", 0);
+		colorShader.use();
+		colorShader.setInt("shadowMap", 0);
+	}
+
+	void setupBlurBuffer() {
+		//make the shadow buffer and bind it to quad fbo
+		glGenFramebuffers(1, &shadowMapFBO);
+
+		//create an image representing base depth buffer
+		glGenTextures(1, &shadowMap);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//bind the buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowMap, 0);
+		glEnable(GL_DEPTH_TEST);
+		//glDrawBuffer(GL_NONE);
+		//glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		blurShader.use();
+		blurShader.setInt("tex", 0);
 	}
 
 	//calculate the depthmap
@@ -134,6 +212,53 @@ public:
 
 		//reset cull face
 		//glCullFace(GL_BACK);
+
+		/*
+		//enter the depth buffer colorization phase
+		glBindFramebuffer(GL_FRAMEBUFFER, depthColorMapFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		colorShader.use();
+		colorShader.setMat4("model", glm::mat4(1.0f));
+		colorShader.setMat4("projection", lightProjection);
+		colorShader.setMat4("view", lightView);
+
+		//shadows
+		colorShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		colorShader.setFloat("near_plane", nearPlane);
+		colorShader.setFloat("far_plane", farPlane);
+		colorShader.setInt("projType", projectionType);
+
+
+		//lighting
+		colorShader.setVec3("viewPos", (*camera).pos);
+		colorShader.setVec3("lightPos", (*light).pos);
+		colorShader.setVec3("lightColor", (*light).color);
+		colorShader.setFloat("lightBrightness", (*light).brightness);
+		colorShader.setFloat("lightDistance", (*light).distance);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+
+		(*minecraft).render();
+
+
+		//enter the gausian blur buffer phase
+		//render the current information to a quad and then send that data to the shader
+
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		blurShader.use();
+		blurShader.setFloat("textureWidth", width);
+		blurShader.setFloat("textureHeight", height);
+
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthColorMap);
+		*/
 
 		//reset buffers
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

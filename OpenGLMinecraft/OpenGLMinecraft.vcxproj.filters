@@ -55,5 +55,8 @@
     <ClInclude Include="MinecraftManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Quad.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
