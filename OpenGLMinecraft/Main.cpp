@@ -48,7 +48,7 @@ const double fps = 60;
 //world settings
 double treeFrequency = 0.001;
 int mapSize = 300;
-int mapAmplitude = 80;
+int mapAmplitude = 120;
 
 Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(mapAmplitude / 2, mapAmplitude, -mapAmplitude/2));
 
@@ -297,6 +297,11 @@ void processInput(GLFWwindow *window, Camera *camera)
 	//ENTER
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
 		animating = !animating;
+	}
+
+	//P sets light pos
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+		(*gE).light.pos = (*camera).pos;
 	}
 }
 

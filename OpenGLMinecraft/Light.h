@@ -51,7 +51,7 @@ public:
 		this->color = color;
 
 		brightness = 1;
-		distance = 300;
+		distance = 400;
 	}
 
 	//include shader files
