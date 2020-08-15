@@ -19,13 +19,26 @@ float fade(float num);
 
 class PerlinNoise {
 public:
+	static int level;
 
 	//methods
 	//octaves is the number of subdivision levels and must be cleanly divisible by the size
 	//if detail is 1 only one pass will be made and no extra detail will be added
 	//detail amplitude is the fraction of amplitude to recursivly be removed
 	//octave detail scale must be greater than 1
+	static std::vector<std::vector<float>> generateNoise(int size, unsigned int octaves, float amplitude, int detail, int octaveDetailScale, float detailAmplitudeScale) {
+		std::vector<std::vector<float>> noiseMap = generate(size, octaves, amplitude, detail, octaveDetailScale, detailAmplitudeScale);
+		std::vector<std::vector<float>> newNoiseMap = generate(size, 1, amplitude, 0, 0, 0);
+		for (int y = 0; y < noiseMap.size(); y++) {
+			for (int x = 0; x < noiseMap.size(); x++) {
+				//add the maps together and subtract the amplitude of the detail so the final amplitude remains the same.
+				noiseMap[y][x] += (newNoiseMap[y][x]) - amplitude;
+			}
+		}
+	}
+
 	static std::vector<std::vector<float>> generate(int size, unsigned int octaves, float amplitude, int detail, int octaveDetailScale, float detailAmplitudeScale) {
+
 		std::vector<glm::vec2> gradientVectorOptions;
 		gradientVectorOptions.push_back(glm::vec2(1, 1));
 		gradientVectorOptions.push_back(glm::vec2(-1, 1));

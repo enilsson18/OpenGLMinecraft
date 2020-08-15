@@ -110,7 +110,8 @@ public:
 
 		//setup classes
 		//minecraft
-		minecraft.setup("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
+		//minecraft.setup("resources/shaders/6.3.coordinate_systems.vs", "resources/shaders/6.3.coordinate_systems.fs");
+		minecraft.setup("resources/shaders/render_minecraft.vs", "resources/shaders/render_minecraft.fs");
 
 		//light
 		light.setup("resources/shaders/light_cube.vs", "resources/shaders/light_cube.fs");
@@ -162,7 +163,7 @@ public:
 		light.render((*camera).projection, (*camera).update());
 
 		//draw world
-		minecraft.renderWorld((*camera).projection, (*camera).update(), *camera, light, shadow.projectionType, shadow.depthMap, shadow.shadowMap, shadow.lightSpaceMatrix);
+		minecraft.renderWorld((*camera).projection, (*camera).update(), *camera, light, shadow.projectionType, shadow.depthMap, shadow.nearPlane, shadow.farPlane, shadow.shadowMap, shadow.lightSpaceMatrix);
 
 		//debug quad
 		//debug.use();

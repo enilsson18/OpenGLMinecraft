@@ -154,6 +154,11 @@ public:
 
 	void render(glm::mat4 proj, glm::mat4 view) {
 		glDepthMask(GL_FALSE);
+
+		//select proper cubemap to use
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
 		shader.use();
 
 		shader.setMat4("projection", proj);

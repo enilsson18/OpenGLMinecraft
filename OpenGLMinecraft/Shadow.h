@@ -40,6 +40,7 @@
 class Shadow {
 public:
 	Shader shader;
+	Shader cubeShader;
 	Shader colorShader;
 	Shader blurShader;
 
@@ -51,7 +52,7 @@ public:
 	//quad to render to
 	Quad quad;
 
-	const unsigned int width = 1024 * 16, height = 1024 * 16;
+	const unsigned int width = 1024 * 7, height = 1024 * 7;
 
 	unsigned int depthMapFBO;
 	unsigned int depthMap;
@@ -93,6 +94,8 @@ public:
 	void setup(const char* vs, const char* fs, MinecraftManager *minecraft, Camera *camera, Light *light) {
 		shader = Shader(vs, fs);
 
+		cubeShader = Shader("resources/shaders/shadow_depth_cube.vs", "resources/shaders/shadow_depth_cube.fs", "resources/shaders/shadow_depth_cube_gs.fs");
+
 		blurShader = Shader("resources/shaders/gausian_blur.vs", "resources/shaders/gausian_blur.fs");
 
 		colorShader = Shader("resources/shaders/shadow_color.vs", "resources/shaders/shadow_color.fs");
@@ -101,7 +104,7 @@ public:
 		this->camera = camera;
 		this->light = light;
 
-		setupDepthBuffer();
+		setupDepthCubeBuffer();
 
 		if (gaussianSmoothing) {
 			setupDepthColorBuffer();
@@ -111,6 +114,67 @@ public:
 
 	//calculate the depthmap
 	void calculateShadows() {
+		//render cube depthmap for shadows
+		calculateCubeDepth();
+
+		//reset buffers
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glViewport(0, 0, 1600, 900);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//std::cout << shadow.depthMap << std::endl;
+	}
+
+	void calculateCubeDepth() {
+		//render depthmap
+		glViewport(0, 0, width, height);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+
+		//fixes the peter panning effect
+		//glCullFace(GL_FRONT);
+
+		//refresh buffer and then render the depthmap to it
+		glClear(GL_DEPTH_BUFFER_BIT);
+		//render
+		//projection matrix
+		glm::mat4 lightProjection = glm::perspective(glm::radians(90.0f), float(width) / float(height), nearPlane, farPlane);
+
+		//transformation views for each side of the cube
+		std::vector<glm::mat4> lightViews;
+		
+		//add all the individual sides
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3( nearPlane, 0.0, 0.0), glm::vec3(0.0, -nearPlane, 0.0)));
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3(-nearPlane, 0.0, 0.0), glm::vec3(0.0, -nearPlane, 0.0)));
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3( 0.0, nearPlane, 0.0), glm::vec3(0.0,  0.0, nearPlane)));
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3( 0.0,-nearPlane, 0.0), glm::vec3(0.0,  0.0,-nearPlane)));
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3( 0.0, 0.0, nearPlane), glm::vec3(0.0, -nearPlane, 0.0)));
+		lightViews.push_back(lightProjection * glm::lookAt((*light).pos, (*light).pos + glm::vec3( 0.0, 0.0,-nearPlane), glm::vec3(0.0, -nearPlane, 0.0)));
+
+		//start the main render sequence
+		//uniform assignment
+		cubeShader.use();
+
+		for (unsigned int i = 0; i < 6; ++i) {
+			cubeShader.setMat4(std::string("shadowMatrices[") + std::to_string(i) + std::string("]"), lightViews[i]);
+		}
+		cubeShader.setFloat("near_plane", nearPlane);
+		cubeShader.setFloat("far_plane", farPlane);
+
+		cubeShader.setVec3("lightPos", (*light).pos);
+
+		glm::mat4 model = glm::mat4(1.0f);
+		cubeShader.setMat4("model", model);
+
+		//render
+		(*minecraft).render();
+
+		//std::cout << "calculating" << std::endl;
+
+		//reset cull face
+		//glCullFace(GL_BACK);
+	}
+
+	void calculateNormalDepth() {
 		//render depthmap
 		glViewport(0, 0, width, height);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -145,84 +209,104 @@ public:
 		//render
 		(*minecraft).render();
 
-		//reset cull face
-		//glCullFace(GL_BACK);
-
-
+		//gaussian smoothing part
 		if (gaussianSmoothing) {
-			//enter the depth buffer colorization phase
-			glBindFramebuffer(GL_FRAMEBUFFER, depthColorMapFBO);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			colorShader.use();
-			colorShader.setMat4("model", glm::mat4(1.0f));
-			colorShader.setMat4("projection", lightProjection);
-			colorShader.setMat4("view", lightView);
-
-			//shadows
-			colorShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-			colorShader.setFloat("near_plane", nearPlane);
-			colorShader.setFloat("far_plane", farPlane);
-			colorShader.setInt("projType", projectionType);
-
-
-			//lighting
-			colorShader.setVec3("viewPos", (*camera).pos);
-			colorShader.setVec3("lightPos", (*light).pos);
-			colorShader.setVec3("lightColor", (*light).color);
-			colorShader.setFloat("lightBrightness", (*light).brightness);
-			colorShader.setFloat("lightDistance", (*light).distance);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, depthMap);
-
-			(*minecraft).render();
-
-
-
-			//enter the gausian blur buffer phase
-			//render the current information to a quad and then send that data to the shader
-			//x axis
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowMapXFBO);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			blurShader.use();
-			blurShader.setInt("stage", 0);
-			blurShader.setFloat("textureWidth", width);
-			blurShader.setFloat("textureHeight", height);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, depthColorMap);
-
-			//render to quad
-			quad.render();
-
-
-			//y axis
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			blurShader.use();
-			blurShader.setInt("stage", 1);
-			blurShader.setFloat("textureWidth", width);
-			blurShader.setFloat("textureHeight", height);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, shadowMapX);
-
-			//render to quad
-			quad.render();
+			calculateBlur(lightProjection, lightView);
 		}
-		
-
-		//reset buffers
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glViewport(0, 0, 1600, 900);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//std::cout << shadow.depthMap << std::endl;
 	}
 
+	void calculateBlur(glm::mat4 proj, glm::mat4 view) {
+		//enter the depth buffer colorization phase
+		glViewport(0, 0, width, height);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthColorMapFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		colorShader.use();
+		colorShader.setMat4("model", glm::mat4(1.0f));
+		colorShader.setMat4("projection", proj);
+		colorShader.setMat4("view", view);
+
+		//shadows
+		colorShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		colorShader.setFloat("near_plane", nearPlane);
+		colorShader.setFloat("far_plane", farPlane);
+		colorShader.setInt("projType", projectionType);
+
+
+		//lighting
+		colorShader.setVec3("viewPos", (*camera).pos);
+		colorShader.setVec3("lightPos", (*light).pos);
+		colorShader.setVec3("lightColor", (*light).color);
+		colorShader.setFloat("lightBrightness", (*light).brightness);
+		colorShader.setFloat("lightDistance", (*light).distance);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+
+		(*minecraft).render();
+
+
+
+		//enter the gausian blur buffer phase
+		//render the current information to a quad and then send that data to the shader
+		//x axis
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapXFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		blurShader.use();
+		blurShader.setInt("stage", 0);
+		blurShader.setFloat("textureWidth", width);
+		blurShader.setFloat("textureHeight", height);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthColorMap);
+
+		//render to quad
+		quad.render();
+
+
+		//y axis
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		blurShader.use();
+		blurShader.setInt("stage", 1);
+		blurShader.setFloat("textureWidth", width);
+		blurShader.setFloat("textureHeight", height);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, shadowMapX);
+
+		//render to quad
+		quad.render();
+	}
+
+	//cubemap style
+	void setupDepthCubeBuffer() {
+		glGenFramebuffers(1, &depthMapFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+
+		//create an image representing base depth buffer
+		glGenTextures(1, &depthMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthMap);
+
+		for (unsigned int i = 0; i < 6; ++i)
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMap, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	//original perspective
 	//size is the resolution of the shadow
 	void setupDepthBuffer() {
 		glGenFramebuffers(1, &depthMapFBO);
@@ -245,8 +329,8 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
 		glEnable(GL_DEPTH_TEST);
-		//glDrawBuffer(GL_NONE);
-		//glReadBuffer(GL_NONE);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

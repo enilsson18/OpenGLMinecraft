@@ -56,6 +56,8 @@ public:
 	void setup(const char* vs, const char* fs) {
 		shader = Shader(vs, fs);
 
+		shader.use();
+		shader.setInt("shadowMap", 0);
 
 	}
 
@@ -342,7 +344,7 @@ public:
 		std::cout << std::endl;
 	}
 
-	void renderWorld(glm::mat4 proj, glm::mat4 view, Camera camera, Light light, int projectionType, unsigned int depthMap, unsigned int colorMap, glm::mat4 lightSpaceMatrix) {
+	void renderWorld(glm::mat4 proj, glm::mat4 view, Camera camera, Light light, int projectionType, unsigned int depthMap, float nearPlane, float farPlane, unsigned int colorMap, glm::mat4 lightSpaceMatrix) {
 		//std::cout << "shader" << std::endl;
 				//activate shader
 		shader.use();
@@ -354,10 +356,13 @@ public:
 		shader.setMat4("view", view);
 
 		//shadows
-		shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		//shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		shader.setFloat("near_plane", camera.nearPlane);
 		shader.setFloat("far_plane", camera.farPlane);
-		shader.setInt("projType", projectionType);
+
+		shader.setFloat("shadow_near", nearPlane);
+		shader.setFloat("shadow_far", farPlane);
+		//shader.setInt("projType", projectionType);
 		shader.setInt("pcflevel", 1);
 
 		//lighting
@@ -371,7 +376,8 @@ public:
 				//set next texture to be rendered
 				//std::cout << depthMap << std::endl;
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
+		//glBindTexture(GL_TEXTURE_2D, depthMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, colorMap);
 		if (blockType.size() >= 1) {

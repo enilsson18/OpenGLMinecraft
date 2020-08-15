@@ -36,18 +36,21 @@ glm::vec3 rotate(glm::vec3 pos, glm::vec2 origin, float increment);
 bool clampMouse;
 bool pastClampMouse;
 
+//status ingame
+bool animating = false;
+
 // settings
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 900;
 
 const double fps = 60;
 
-Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0, 30, -5));
-
 //world settings
 double treeFrequency = 0.001;
-int mapSize = 200;
+int mapSize = 300;
 int mapAmplitude = 80;
+
+Camera camera = Camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(mapAmplitude / 2, mapAmplitude, -mapAmplitude/2));
 
 GraphicsEngine *gE;
 
@@ -56,6 +59,9 @@ int main() {
 
 	//set priorety
 	//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+
+	//status vars
+	animating = false;
 
 	GraphicsEngine graphicsEngine("OpenGL Minecraft", &camera, &SCR_WIDTH, &SCR_HEIGHT);
 	gE = &graphicsEngine;
@@ -120,7 +126,7 @@ int main() {
 	//generate textures before render
 	graphicsEngine.minecraft.compileVertices();
 	graphicsEngine.minecraft.generateTextures();
-	//graphicsEngine.shadow.calculateShadows();
+	graphicsEngine.shadow.calculateShadows();
 
 	//std::cout << graphicsEngine.loadedBlocks[0].size() << std::endl;
 
@@ -142,7 +148,9 @@ int main() {
 
 		//update game world info
 		//update light so it moves
-		//graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(50, 50), 1);
+		if (animating) {
+			graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(mapSize / 2, mapSize / 2), 0.1);
+		}
 
 
 		//render frame
@@ -284,6 +292,11 @@ void processInput(GLFWwindow *window, Camera *camera)
 	//CTRL
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		(*camera).pos -= velocity * glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+
+	//ENTER
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+		animating = !animating;
 	}
 }
 
