@@ -410,7 +410,10 @@ public:
 		shader.setMat4("model", model);
 
 		//default value idk why
+		
+		glCullFace(GL_FRONT);
 		render();
+		glCullFace(GL_BACK);
 	}
 
 	void render() {

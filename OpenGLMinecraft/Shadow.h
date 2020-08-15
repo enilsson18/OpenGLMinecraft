@@ -131,7 +131,7 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
 		//fixes the peter panning effect
-		//glCullFace(GL_FRONT);
+		glCullFace(GL_FRONT);
 
 		//refresh buffer and then render the depthmap to it
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -171,7 +171,7 @@ public:
 		//std::cout << "calculating" << std::endl;
 
 		//reset cull face
-		//glCullFace(GL_BACK);
+		glCullFace(GL_BACK);
 	}
 
 	void calculateNormalDepth() {

@@ -48,8 +48,8 @@ float ShadowCalculation(float distance)
     float bias = 0;
     //bias = max(0.00000001 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000000001);
     //bias = max(0.000005 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.0000005);
-    //bias = max(0.5 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.05);
-    bias = 2;
+    bias = max(1.0 * (dot(normalize(Normal), normalize(lightPos - FragPos))), 0.000005);
+    //bias = 2;
     //float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;
 
     /*
@@ -81,6 +81,7 @@ float ShadowCalculation(float distance)
     float shadow = 0.0;
     int samples  = 20;
     float diskRadius = 0.1;
+    //float diskRadius = (1 - distance) * 0.1; 
     for(int i = 0; i < samples; ++i)
     {
         float closestDepth = texture(shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
@@ -131,7 +132,7 @@ void main()
 	float diff = 0;
 
 	//ambient lighting
-	float ambientStrength = 0.1;
+	float ambientStrength = 0.05;
     vec3 ambient = ambientStrength * lightColor;
 
     //diffuse lighting
@@ -152,15 +153,19 @@ void main()
     float distance = distance(FragPos, lightPos);
     distance *= lightBrightness * (1/lightDistance);
     distance = 1 - distance;
+    //distance *= 2;
 
     //shadow
     float shadow = ShadowCalculation(distance);
     if (shadow <= 0){
     	//shadow = texture(shadowBlurMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r;
     }
+    shadow = 1 - shadow * 1;
 
+    //there was a glitch where the distance was darker than the shadow so the shadows were actually lighter if you went far enough away.
+    float darkness = min(shadow, distance);
 	//combine and output lightings and shadows
-	vec3 result = ((1 - (shadow * 4) + distance) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
+	vec3 result = ((darkness) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
 	FragColor = vec4(result, 1.0);
     //FragColor = vec4(vec3(0.0), 1.0);
 

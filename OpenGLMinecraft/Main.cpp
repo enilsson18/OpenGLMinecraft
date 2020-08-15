@@ -116,7 +116,7 @@ int main() {
 
 	//set light pos
 	//graphicsEngine.light.pos = glm::vec3(mapSize/2, mapAmplitude*1, mapSize/2);
-	graphicsEngine.light.pos = glm::vec3(-10, mapAmplitude, -10);
+	graphicsEngine.light.pos = glm::vec3(0, mapAmplitude, mapSize / 2);
 
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i].pos.x >= 0 && blocks[i].pos.z >= 0)
@@ -149,7 +149,7 @@ int main() {
 		//update game world info
 		//update light so it moves
 		if (animating) {
-			graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(mapSize / 2, mapSize / 2), 0.1);
+			graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(mapSize / 2, mapSize / 2), 0.2);
 		}
 
 
