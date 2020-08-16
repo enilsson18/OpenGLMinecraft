@@ -31,13 +31,27 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void makeTree(std::vector<Block> *blocks, glm::vec3 pos);
 
 glm::vec3 rotate(glm::vec3 pos, glm::vec2 origin, float increment);
+glm::vec3 animate(glm::vec3 pos, glm::vec3 target, float increment);
 
 //status variables for UI
 bool clampMouse;
 bool pastClampMouse;
 
 //status ingame
+bool rotating = false;
 bool animating = false;
+glm::vec3 animationTarget;
+float animationTime = 20;
+float travelDistance;
+
+//control mouse sense and velocity
+float speedMultiplier = 1;
+float senseMultiplier = 1;
+
+float speedIncrement = 1.1;
+float senseIncrement = 1.1;
+
+float sensitivity = 0.1f;
 
 // settings
 const unsigned int SCR_WIDTH = 1600;
@@ -60,14 +74,16 @@ int main() {
 	//set priorety
 	//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 
-	//status vars
-	animating = false;
-
 	GraphicsEngine graphicsEngine("OpenGL Minecraft", &camera, &SCR_WIDTH, &SCR_HEIGHT);
 	gE = &graphicsEngine;
 	glfwSetCursorPosCallback(graphicsEngine.window, mouse_callback);
 	glfwSetWindowFocusCallback(graphicsEngine.window, window_focus_callback);
 	glfwSetMouseButtonCallback(graphicsEngine.window, mouse_button_callback);
+
+	//status vars
+	rotating = false;
+	animating = false;
+	animationTarget = graphicsEngine.light.pos;
 
 	//graphicsEngine.minecraft.addBlockType(BlockType("Container", "resources/textures/GrassUnwrapped.jpg"));
 	graphicsEngine.minecraft.addBlockType(BlockType("Grass", "resources/textures/GrassUnwrapped.jpg"));
@@ -148,8 +164,18 @@ int main() {
 
 		//update game world info
 		//update light so it moves
-		if (animating) {
+		if (rotating) {
 			graphicsEngine.light.pos = rotate(graphicsEngine.light.pos, glm::vec2(mapSize / 2, mapSize / 2), 0.2);
+		}
+
+		if (animating) {
+			glm::vec3 prevPos = graphicsEngine.light.pos;
+
+			//make it move so that it reaches the target in 20 seconds and cancel when it gets close enough
+			graphicsEngine.light.pos = animate(graphicsEngine.light.pos, animationTarget, travelDistance / (animationTime * fps));
+			if (graphicsEngine.light.pos == prevPos) {
+				animating = false;
+			}
 		}
 
 
@@ -249,6 +275,18 @@ glm::vec3 rotate(glm::vec3 p, glm::vec2 origin, float increment) {
 	return glm::vec3(origin.x + cos(angle / (180 / 3.1415926)) * r, p.y, origin.y + sin(angle / (180 / 3.1415926)) * r);
 }
 
+glm::vec3 animate(glm::vec3 pos, glm::vec3 target, float increment) {
+	glm::vec3 dir = glm::normalize(target - pos);
+	glm::vec3 newPos = dir * increment + pos;
+
+	//if its close enough then stop otherwise move forward
+	if (glm::distance(newPos, target) < increment) {
+		return pos;
+	}
+
+	return newPos;
+}
+
 // process all input: ask GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow *window, Camera *camera)
 {
@@ -265,44 +303,79 @@ void processInput(GLFWwindow *window, Camera *camera)
 		pastClampMouse = clampMouse;
 	}
 
-	float velocity = 1.0f;
+	float accel = 0.02 * speedMultiplier;
+	(*camera).deceleration = 0.01 * speedMultiplier;
+
+	//speed controls
+	//up
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		speedMultiplier *= speedIncrement;
+	}
+	//down
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		speedMultiplier /= speedIncrement;
+	}
+
+	//mouse controls
+	//right
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		senseMultiplier *= senseIncrement;
+	}
+
+	//left
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		senseMultiplier /= senseIncrement;
+	}
 
 	//camera controls
 	//W
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		(*camera).pos += velocity * (*camera).Front;
+		(*camera).vel += accel * (*camera).Front;
 	}
 	//A
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		(*camera).pos -= velocity * (*camera).Right;
+		(*camera).vel -= accel * (*camera).Right;
 	}
 	//S
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		(*camera).pos -= velocity * (*camera).Front;
+		(*camera).vel -= accel * (*camera).Front;
 	}
 	//D
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		(*camera).pos += velocity * (*camera).Right;
+		(*camera).vel += accel * (*camera).Right;
 	}
 
 	//SPACE
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		(*camera).pos += velocity * glm::vec3(0.0f, 1.0f, 0.0f);
+		(*camera).vel += accel * glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 	//CTRL
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		(*camera).pos -= velocity * glm::vec3(0.0f, 1.0f, 0.0f);
+		(*camera).vel -= accel * glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 
 	//ENTER
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-		animating = !animating;
+		rotating = !rotating;
 	}
 
 	//P sets light pos
 	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
 		(*gE).light.pos = (*camera).pos;
 	}
+
+	//O sets the target for the light to move witht he animate function
+	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+		animationTarget = (*camera).pos;
+	}
+
+	//RSHIFT starts the animation
+	if (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+		animating = true;
+		travelDistance = glm::distance((*gE).light.pos, animationTarget);
+	}
+
+	(*camera).updateVelocity();
 }
 
 //focus callback
@@ -337,9 +410,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		camera.lastX = xpos;
 		camera.lastY = ypos;
 
-		float sensitivity = 0.1f; // change this value to your liking
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
+		//float sensitivity = 0.1f; // change this value to your liking
+		xoffset *= sensitivity * senseMultiplier;
+		yoffset *= sensitivity * senseMultiplier;
 
 		camera.yaw += xoffset;
 		camera.pitch += yoffset;

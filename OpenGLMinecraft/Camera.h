@@ -40,6 +40,8 @@ public:
 
 	//camera values
 	glm::vec3 pos;
+	glm::vec3 vel;
+	float deceleration;
 	glm::vec3 rot;
 	glm::mat4 view, projection;
 
@@ -66,6 +68,9 @@ public:
 		//set position and rotation
 		pos = startPos;
 
+		vel = glm::vec3(0, 0, 0);
+		deceleration = 0.05;
+
 		rot = glm::vec3(0, 0, 0);
 	}
 
@@ -77,6 +82,40 @@ public:
 		pos.x += translation.x;
 		pos.y += translation.y;
 		pos.z += translation.z;
+	}
+
+	void updateVelocity() {
+		//update pos with velocity
+		pos += vel;
+
+		vel *= (1 - deceleration) * (1 - deceleration);
+
+		if (vel.x < deceleration*0.6 && vel.x > -deceleration * 0.6 &&
+			vel.y < deceleration*0.6 && vel.y > -deceleration * 0.6 &&
+			vel.z < deceleration*0.6 && vel.z > -deceleration * 0.6) {
+
+			vel = glm::vec3(0, 0, 0);
+		}
+		/*
+		if (vel.x != 0) {
+			vel.x -= deceleration * (vel.x/abs(vel.x));
+			if (vel.x < deceleration*0.6 && vel.x > -deceleration*0.6) {
+				vel.x = 0;
+			}
+		}
+		if (vel.y != 0) {
+			vel.y -= deceleration * (vel.y / abs(vel.y));
+			if (vel.y < deceleration*0.6 && vel.y > -deceleration*0.6) {
+				vel.y = 0;
+			}
+		}
+		if (vel.z != 0) {
+			vel.z -= deceleration * (vel.z / abs(vel.z));
+			if (vel.z < deceleration*0.6 && vel.z > -deceleration*0.6) {
+				vel.z = 0;
+			}
+		}
+		*/
 	}
 
 	glm::mat4 update() {

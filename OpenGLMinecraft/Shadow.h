@@ -52,7 +52,7 @@ public:
 	//quad to render to
 	Quad quad;
 
-	const unsigned int width = 1024 * 7, height = 1024 * 7;
+	const unsigned int width = 1024 * 4, height = 1024 * 4;
 
 	unsigned int depthMapFBO;
 	unsigned int depthMap;

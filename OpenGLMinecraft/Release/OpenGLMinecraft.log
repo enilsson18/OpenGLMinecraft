@@ -1,5 +1,6 @@
 ﻿  Main.cpp
 c:\users\erik\documents\opengl stuff\include\shader.h(61): warning C4101: 'e': unreferenced local variable
+c:\users\erik\source\repos\openglminecraft\openglminecraft\camera.h(72): warning C4305: '=': truncation from 'double' to 'float'
 c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(79): warning C4018: '<': signed/unsigned mismatch
 c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(89): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\minecraftmanager.h(90): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
@@ -37,28 +38,33 @@ c:\users\erik\source\repos\openglminecraft\openglminecraft\perlinnoise.h(123): w
 c:\users\erik\source\repos\openglminecraft\openglminecraft\perlinnoise.h(124): warning C4018: '<': signed/unsigned mismatch
 c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
   c:\users\erik\documents\opengl stuff\include\glad\glad.h(32): note: see previous definition of 'APIENTRY'
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(83): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(83): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(85): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(121): warning C4018: '<': signed/unsigned mismatch
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(152): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(167): warning C4244: 'initializing': conversion from '_Rep' to 'int', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(51): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(52): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(99): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(99): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(101): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(137): warning C4018: '<': signed/unsigned mismatch
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(168): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(175): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(193): warning C4244: 'initializing': conversion from '_Rep' to 'int', possible loss of data
           with
           [
               _Rep=__int64
           ]
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(172): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(330): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(331): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(335): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(336): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(337): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(338): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(198): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(270): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(306): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(307): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(403): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(404): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(408): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(409): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(410): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(411): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 LINK : warning LNK4098: defaultlib 'MSVCRTD' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  2 of 1691 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+  2 of 1698 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    7 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   OpenGLMinecraft.vcxproj -> C:\Users\Erik\source\repos\OpenGLMinecraft\Release\OpenGLMinecraft.exe
