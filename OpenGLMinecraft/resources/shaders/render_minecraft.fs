@@ -57,17 +57,17 @@ float ShadowCalculation(float distance)
     //int pcfLevel = int(pcflevel * (1-distance));
     int pcfLevel = pcflevel;
     float shadow = 0.0;
-	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-	for(int x = -pcfLevel; x <= pcfLevel; ++x)
-	{
-    	for(int y = -pcfLevel; y <= pcfLevel; ++y)
-    	{
-    	    float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-    	    shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
-    	}    
-	}
-	shadow /= (pcfLevel*2 + 1) * (pcfLevel*2 + 1);
-	*/
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -pcfLevel; x <= pcfLevel; ++x)
+    {
+        for(int y = -pcfLevel; y <= pcfLevel; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= (pcfLevel*2 + 1) * (pcfLevel*2 + 1);
+    */
 
     vec3 sampleOffsetDirections[20] = vec3[]
     (
@@ -92,7 +92,7 @@ float ShadowCalculation(float distance)
     }
     shadow /= float(samples);  
 
-	//if(projCoords.z > 1.0)
+    //if(projCoords.z > 1.0)
         //shadow = 0.0;
 
     
@@ -103,73 +103,73 @@ float ShadowCalculation(float distance)
 
 void main()
 {
-	//load textures sorry I am too lazy to figure out how to make and arrange arrays in glsl
-	vec3 objectColor;
+    //load textures sorry I am too lazy to figure out how to make and arrange arrays in glsl
+    vec3 objectColor;
 
     if (TexNum == 0){
-		objectColor = vec3(texture(texture1, TexCoord));
-	}
-	else if (TexNum == 1){
-		objectColor = vec3(texture(texture2, TexCoord));
-	}
-	else if (TexNum == 2){
-		objectColor = vec3(texture(texture3, TexCoord));
-	}
-	else if (TexNum == 3){
-		objectColor = vec3(texture(texture4, TexCoord));
-	}
-	else if (TexNum == 4){
-		//objectColor = vec3(texture(texture5, TexCoord));
-	}
-	else if (TexNum == 5){
-		//objectColor = vec3(texture(texture6, TexCoord));
-	}
-	//objectColor = vec3(255 - 255 * texture(shadowMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r);
-	//objectColor = vec3(255 - 255 * (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).z);
-	//objectColor = vec3(texture(shadowMap, TexCoord));
+        objectColor = vec3(texture(texture1, TexCoord));
+    }
+    else if (TexNum == 1){
+        objectColor = vec3(texture(texture2, TexCoord));
+    }
+    else if (TexNum == 2){
+        objectColor = vec3(texture(texture3, TexCoord));
+    }
+    else if (TexNum == 3){
+        objectColor = vec3(texture(texture4, TexCoord));
+    }
+    else if (TexNum == 4){
+        //objectColor = vec3(texture(texture5, TexCoord));
+    }
+    else if (TexNum == 5){
+        //objectColor = vec3(texture(texture6, TexCoord));
+    }
+    //objectColor = vec3(255 - 255 * texture(shadowMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r);
+    //objectColor = vec3(255 - 255 * (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).z);
+    //objectColor = vec3(texture(shadowMap, TexCoord));
     //objectColor = vec3(255 * ShadowCalculation(1));
 
-	float diff = 0;
+    float diff = 0;
 
-	//ambient lighting
-	float ambientStrength = 0.05;
+    //ambient lighting
+    float ambientStrength = 0.15;
     vec3 ambient = ambientStrength * lightColor;
 
     //diffuse lighting
-	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(lightPos - FragPos);
-	diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - FragPos);
+    diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
 
     //specular lighting
     //basically just make the surface brighter if more light reflects more into the viewers eyes
-    float specularStrength = 0.5;
+    float specularStrength = 0.4;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor; 
 
-	//disperse light over a distance and this is the factor of it
+    //disperse light over a distance and this is the factor of it
     float distance = distance(FragPos, lightPos);
-    distance *= lightBrightness * (1/lightDistance);
+    distance *= lightBrightness * (1/(lightDistance * 1.5));
     distance = 1 - distance;
     //distance *= 2;
 
     //shadow
     float shadow = ShadowCalculation(distance);
     if (shadow <= 0){
-    	//shadow = texture(shadowBlurMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r;
+        //shadow = texture(shadowBlurMap, (vec3(FragPosLightSpace.xyz / FragPosLightSpace.w) * 0.5 + 0.5).xy).r;
     }
     shadow = 1 - shadow * 1;
 
     //there was a glitch where the distance was darker than the shadow so the shadows were actually lighter if you went far enough away.
     float darkness = min(shadow, distance);
-	//combine and output lightings and shadows
-	vec3 result = ((darkness) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
-	FragColor = vec4(result, 1.0);
+    //combine and output lightings and shadows
+    vec3 result = ((darkness) * (specular + diffuse) * 1 + ambient * 1) * objectColor;
+    FragColor = vec4(result, 1.0);
     //FragColor = vec4(vec3(0.0), 1.0);
 
-	if (shadow == 0.0f){
-		//FragColor = vec4(1.0);
-	}
+    if (shadow == 0.0f){
+        //FragColor = vec4(1.0);
+    }
 }

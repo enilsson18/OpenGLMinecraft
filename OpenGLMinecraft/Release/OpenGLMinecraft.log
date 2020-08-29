@@ -65,6 +65,6 @@ LINK : warning LNK4098: defaultlib 'MSVCRTD' conflicts with use of other libs; u
   Generating code
   2 of 1698 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    7 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   OpenGLMinecraft.vcxproj -> C:\Users\Erik\source\repos\OpenGLMinecraft\Release\OpenGLMinecraft.exe
