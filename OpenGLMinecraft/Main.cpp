@@ -391,7 +391,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		clampMouse = true;
 	}
-
 }
 
 //mouse callback

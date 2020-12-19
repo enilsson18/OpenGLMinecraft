@@ -1,0 +1,7 @@
+﻿LINK : warning LNK4098: defaultlib 'MSVCRTD' conflicts with use of other libs; use /NODEFAULTLIB:library
+glfw3.lib(window.obj) : error LNK2001: unresolved external symbol __imp_strncpy
+glfw3.lib(input.obj) : error LNK2001: unresolved external symbol __imp_strncpy
+glfw3.lib(win32_joystick.obj) : error LNK2001: unresolved external symbol __imp_strncpy
+glfw3.lib(input.obj) : error LNK2001: unresolved external symbol __imp_strspn
+glfw3.lib(win32_monitor.obj) : error LNK2001: unresolved external symbol __imp_wcscpy
+C:\Users\Erik\source\repos\OpenGLMinecraft\x64\Release\OpenGLMinecraft.exe : fatal error LNK1120: 3 unresolved externals

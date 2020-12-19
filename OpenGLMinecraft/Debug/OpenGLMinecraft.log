@@ -55,13 +55,10 @@ c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(198): warnin
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(270): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(306): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(307): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(402): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(403): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(404): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(407): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(408): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(409): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(409): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(410): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erik\source\repos\openglminecraft\openglminecraft\main.cpp(411): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  glad.c
-c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
-  c:\users\erik\documents\opengl stuff\include\glad\glad.h(32): note: see previous definition of 'APIENTRY'
   OpenGLMinecraft.vcxproj -> C:\Users\Erik\source\repos\OpenGLMinecraft\Debug\OpenGLMinecraft.exe
