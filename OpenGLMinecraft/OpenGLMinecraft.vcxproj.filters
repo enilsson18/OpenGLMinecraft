@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{3c0ab15e-2a48-4bf5-8dfa-09f8fe7bfba1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Documents\OpenGL Stuff\include\img\ImageLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Block.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsEngine.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockType.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Surface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoise.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MinecraftManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Quad.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
